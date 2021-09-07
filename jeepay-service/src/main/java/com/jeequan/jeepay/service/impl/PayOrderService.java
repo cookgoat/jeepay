@@ -191,11 +191,16 @@ public class PayOrderService extends ServiceImpl<PayOrderMapper, PayOrder> {
         JSONObject json = new JSONObject();
         Map dayAmount = new LinkedHashMap();
         ArrayList array = new ArrayList<>();
-        BigDecimal payAmount = new BigDecimal(0);    // 当日金额
-        BigDecimal payWeek  = payAmount;   // 周总收益
-        String todayAmount = "0.00";    // 今日金额
-        String todayPayCount = "0";    // 今日交易笔数
-        String yesterdayAmount = "0.00";    // 昨日金额
+        // 当日金额
+        BigDecimal payAmount = new BigDecimal(0);
+        // 周总收益
+        BigDecimal payWeek  = payAmount;
+        // 今日金额
+        String todayAmount = "0.00";
+        // 今日交易笔数
+        String todayPayCount = "0";
+        // 昨日金额
+        String yesterdayAmount = "0.00";
         Date today = new Date();
         for(int i = 0 ; i < 7 ; i++){
             Date date = DateUtil.offsetDay(today, -i).toJdkDate();

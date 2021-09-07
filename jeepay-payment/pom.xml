@@ -105,6 +105,18 @@
             <artifactId>alipay-sdk-java</artifactId>
         </dependency>
 
+        <!-- ok-https  -->
+        <dependency>
+            <groupId>com.ejlchina</groupId>
+            <artifactId>okhttps-fastjson</artifactId>
+        </dependency>
+
+        <!-- org-jsoup  -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+        </dependency>
+
     </dependencies>
 
 

@@ -71,7 +71,6 @@ public class PayOrderController extends CommonCtrl {
     public ApiRes list() {
 
         PayOrder payOrder = getObject(PayOrder.class);
-        JSONObject paramJSON = getReqParamJSON();
         LambdaQueryWrapper<PayOrder> wrapper = PayOrder.gw();
         if (StringUtils.isNotEmpty(payOrder.getPayOrderId())) {
             wrapper.eq(PayOrder::getPayOrderId, payOrder.getPayOrderId());
@@ -103,6 +102,7 @@ public class PayOrderController extends CommonCtrl {
         if (payOrder.getDivisionState() != null) {
             wrapper.eq(PayOrder::getDivisionState, payOrder.getDivisionState());
         }
+        JSONObject paramJSON = getReqParamJSON();
         if (paramJSON != null) {
             if (StringUtils.isNotEmpty(paramJSON.getString("createdStart"))) {
                 wrapper.ge(PayOrder::getCreatedAt, paramJSON.getString("createdStart"));

@@ -54,7 +54,6 @@ public class RefundOrderController extends CommonCtrl {
     public ApiRes list() {
 
         RefundOrder refundOrder = getObject(RefundOrder.class);
-        JSONObject paramJSON = getReqParamJSON();
         LambdaQueryWrapper<RefundOrder> wrapper = RefundOrder.gw();
         if (StringUtils.isNotEmpty(refundOrder.getRefundOrderId())) {
             wrapper.eq(RefundOrder::getRefundOrderId, refundOrder.getRefundOrderId());
@@ -83,12 +82,13 @@ public class RefundOrderController extends CommonCtrl {
         if (StringUtils.isNotEmpty(refundOrder.getAppId())) {
             wrapper.eq(RefundOrder::getAppId, refundOrder.getAppId());
         }
-        if (paramJSON != null) {
-            if (StringUtils.isNotEmpty(paramJSON.getString("createdStart"))) {
-                wrapper.ge(RefundOrder::getCreatedAt, paramJSON.getString("createdStart"));
+        JSONObject paramJson = getReqParamJSON();
+        if (paramJson != null) {
+            if (StringUtils.isNotEmpty(paramJson.getString("createdStart"))) {
+                wrapper.ge(RefundOrder::getCreatedAt, paramJson.getString("createdStart"));
             }
-            if (StringUtils.isNotEmpty(paramJSON.getString("createdEnd"))) {
-                wrapper.le(RefundOrder::getCreatedAt, paramJSON.getString("createdEnd"));
+            if (StringUtils.isNotEmpty(paramJson.getString("createdEnd"))) {
+                wrapper.le(RefundOrder::getCreatedAt, paramJson.getString("createdEnd"));
             }
         }
         wrapper.orderByDesc(RefundOrder::getCreatedAt);
