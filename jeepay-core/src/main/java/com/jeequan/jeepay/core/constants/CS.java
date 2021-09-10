@@ -187,4 +187,17 @@ public class CS {
         String WX_V2 = "V2";  //微信接口版本V2
         String WX_V3 = "V3";  //微信接口版本V3
     }
+    //http 请求headers
+    public interface HEADERS{
+        String  ACCEPT_XHTML_XML = "text/html, application/xhtml+xml, */*";
+        String  ACCEPT_ALL = "*/*";
+        String  FORM_URL_ENCODE = "application/x-www-form-urlencoded; charset=UTF-8";
+        String  ACCEPT_LANGUAGE = "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2";
+        String  ACCEPT_ENCODING = "gzip, deflate";
+        String  X_Requested_With = "XMLHttpRequest";
+
+    }
+
+
+
 }

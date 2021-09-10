@@ -80,6 +80,19 @@
       <artifactId>commons-lang3</artifactId>
     </dependency>
 
+    <!-- jsoup -->
+    <dependency>
+          <groupId>org.jsoup</groupId>
+          <artifactId>jsoup</artifactId>
+      </dependency>
+
+    <!-- ok-https  -->
+    <dependency>
+      <groupId>com.ejlchina</groupId>
+      <artifactId>okhttps-fastjson</artifactId>
+      <version>${okhttps.version}</version>
+    </dependency>
+
   </dependencies>
 
   <build>

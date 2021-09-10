@@ -25,9 +25,9 @@ public class MemoryCookieStore implements CookieStore {
 
     @Override
     public void add(HttpUrl httpUrl, Cookie cookie) {
-        if (!cookie.persistent()) {
-            return;
-        }
+//        if (!cookie.persistent()) {
+//            return;
+//        }
 
         String name = this.cookieName(cookie);
         String hostKey = this.hostName(httpUrl);
@@ -41,11 +41,11 @@ public class MemoryCookieStore implements CookieStore {
     @Override
     public void add(HttpUrl httpUrl, List<Cookie> cookies) {
         for (Cookie cookie : cookies) {
-        if (isCookieExpired(cookie)) {
-            continue;
+            if (isCookieExpired(cookie)) {
+                continue;
+            }
+            this.add(httpUrl, cookie);
         }
-        this.add(httpUrl, cookie);
-    }
     }
 
     @Override
@@ -58,8 +58,8 @@ public class MemoryCookieStore implements CookieStore {
         ArrayList<Cookie> result = new ArrayList<Cookie>();
 
         for (String hostKey : this.cookies.keySet()) {
-        result.addAll(this.get(hostKey));
-    }
+            result.addAll(this.get(hostKey));
+        }
 
         return result;
     }
