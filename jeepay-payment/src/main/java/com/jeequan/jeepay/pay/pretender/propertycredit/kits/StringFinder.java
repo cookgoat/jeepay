@@ -1,4 +1,4 @@
-package com.jeequan.jeepay.pay.channel.propertycredit.kits;
+package com.jeequan.jeepay.pay.pretender.propertycredit.kits;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

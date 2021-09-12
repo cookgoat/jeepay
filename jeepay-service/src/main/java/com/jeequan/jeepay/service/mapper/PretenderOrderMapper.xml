@@ -6,6 +6,7 @@
     <resultMap id="BaseResultMap" type="com.jeequan.jeepay.core.entity.PretenderOrder">
         <id column="id" property="id" />
         <result column="biz_type" property="bizType" />
+        <result column="product_type" property="productType" />
         <result column="out_trade_no" property="outTradeNo" />
         <result column="status" property="status" />
         <result column="pretender_account_id" property="pretenderAccountId" />

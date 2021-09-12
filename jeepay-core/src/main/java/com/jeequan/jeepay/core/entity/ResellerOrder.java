@@ -1,6 +1,7 @@
 package com.jeequan.jeepay.core.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -24,6 +25,10 @@ public class ResellerOrder implements Serializable {
 
     private static final long serialVersionUID=1L;
 
+    public static final LambdaQueryWrapper<ResellerOrder> gw(){
+        return new LambdaQueryWrapper<>();
+    }
+
     /**
      * 主键
      */
@@ -42,7 +47,7 @@ public class ResellerOrder implements Serializable {
     /**
      * 业务类型
      */
-    private String bizType;
+    private String productType;
 
     /**
      * 充值账号
@@ -77,7 +82,7 @@ public class ResellerOrder implements Serializable {
     /**
      * 匹配时间
      */
-    private Date gmtMatch;
+    private Date gmtPayingStart;
 
     /**
      * 创建时间

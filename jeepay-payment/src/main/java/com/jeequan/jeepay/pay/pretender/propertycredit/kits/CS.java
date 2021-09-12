@@ -1,4 +1,4 @@
-package com.jeequan.jeepay.pay.channel.propertycredit.kits;
+package com.jeequan.jeepay.pay.pretender.propertycredit.kits;
 
 /**
  * @author axl rose
@@ -17,7 +17,7 @@ public class CS {
         /**
          * isPaying of api resp
          */
-        String IS_PAYING = "00";
+        String IS_PAYING = "01";
 
 
     }

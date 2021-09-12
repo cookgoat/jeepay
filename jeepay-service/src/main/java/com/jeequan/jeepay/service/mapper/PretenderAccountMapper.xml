@@ -14,4 +14,22 @@
         <result column="ext" property="ext" />
     </resultMap>
 
+
+    <select id="randomByBizType" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT *
+        FROM `t_pretender_account` AS t1
+                 JOIN (
+            SELECT ROUND(RAND () * ((
+                                        SELECT MAX(id)
+                                        FROM `t_pretender_account` WHERE `status`='AVAILABLE' AND biz_type= #{bizType})-(
+                                        SELECT MIN(id)
+                                        FROM `t_pretender_account`  WHERE `status`='AVAILABLE' AND  biz_type= #{bizType}))+(
+                             SELECT MIN(id)
+                             FROM `t_pretender_account` WHERE `status`='AVAILABLE' AND  biz_type= #{bizType})) AS id) AS t2
+        WHERE t1.id >= t2.id AND t1.`status` ='AVAILABLE' AND t1.biz_type= #{bizType}
+        ORDER BY t1.id
+            LIMIT 1;
+    </select>
+
+
 </mapper>

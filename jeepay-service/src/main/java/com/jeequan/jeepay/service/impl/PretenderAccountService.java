@@ -16,4 +16,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class PretenderAccountService extends ServiceImpl<PretenderAccountMapper, PretenderAccount>  {
 
+   public   PretenderAccount randomByBizType  (String bizType){
+       return  this.getBaseMapper().randomByBizType(bizType);
+    }
+
+
+
 }

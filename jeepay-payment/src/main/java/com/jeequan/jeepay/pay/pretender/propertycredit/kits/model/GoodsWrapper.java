@@ -1,9 +1,10 @@
-package com.jeequan.jeepay.pay.channel.propertycredit.kits.model;
+package com.jeequan.jeepay.pay.pretender.propertycredit.kits.model;
 
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.CS;
 import lombok.Data;
-import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
-import com.jeequan.jeepay.pay.channel.propertycredit.kits.CS;
+
+import java.util.Optional;
 
 /**
  * @author axl rose

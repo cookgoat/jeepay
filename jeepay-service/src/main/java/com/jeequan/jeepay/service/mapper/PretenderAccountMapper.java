@@ -2,6 +2,7 @@ package com.jeequan.jeepay.service.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.jeequan.jeepay.core.entity.PretenderAccount;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -12,5 +13,7 @@ import com.jeequan.jeepay.core.entity.PretenderAccount;
  * @since 2021-09-12
  */
 public interface PretenderAccountMapper extends BaseMapper<PretenderAccount> {
+
+    PretenderAccount randomByBizType  (@Param("bizType") String bizType);
 
 }

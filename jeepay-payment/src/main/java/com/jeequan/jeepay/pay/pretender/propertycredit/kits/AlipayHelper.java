@@ -1,4 +1,4 @@
-package com.jeequan.jeepay.pay.channel.propertycredit.kits;
+package com.jeequan.jeepay.pay.pretender.propertycredit.kits;
 
 import com.alibaba.fastjson.JSONObject;
 import org.jsoup.Jsoup;

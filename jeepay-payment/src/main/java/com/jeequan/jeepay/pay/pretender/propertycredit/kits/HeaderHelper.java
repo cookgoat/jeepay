@@ -1,4 +1,4 @@
-package com.jeequan.jeepay.pay.channel.propertycredit.kits;
+package com.jeequan.jeepay.pay.pretender.propertycredit.kits;
 
 import com.jeequan.jeepay.core.utils.UserAgentUtil;
 import jodd.util.StringUtil;

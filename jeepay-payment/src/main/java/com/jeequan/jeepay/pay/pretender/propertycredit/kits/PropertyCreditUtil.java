@@ -1,4 +1,4 @@
-package com.jeequan.jeepay.pay.channel.propertycredit.kits;
+package com.jeequan.jeepay.pay.pretender.propertycredit.kits;
 
 import com.alibaba.fastjson.JSON;
 import com.ejlchina.okhttps.FastjsonMsgConvertor;
@@ -11,9 +11,9 @@ import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.utils.JsoupUtils;
 import com.jeequan.jeepay.core.utils.MapUtil;
 import com.jeequan.jeepay.core.utils.OkHttpsHelp;
-import com.jeequan.jeepay.pay.channel.propertycredit.kits.rq.*;
-import com.jeequan.jeepay.pay.channel.propertycredit.kits.rs.BaseResult;
-import com.jeequan.jeepay.pay.channel.propertycredit.kits.rs.ToWechatPayResult;
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.*;
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.BaseResult;
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.ToWechatPayResult;
 import okhttp3.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.jeequan.jeepay.pay.channel.propertycredit.kits.CS.*;
-import static com.jeequan.jeepay.pay.channel.propertycredit.kits.CS.API.GO_PAY_ORDER_URL;
-import static com.jeequan.jeepay.pay.channel.propertycredit.kits.CS.API.RECHARGE_PAGE;
+import static com.jeequan.jeepay.pay.pretender.propertycredit.kits.CS.*;
+import static com.jeequan.jeepay.pay.pretender.propertycredit.kits.CS.API.GO_PAY_ORDER_URL;
+import static com.jeequan.jeepay.pay.pretender.propertycredit.kits.CS.API.RECHARGE_PAGE;
 
 /**
  * PropertyCredit pay service
@@ -191,15 +191,15 @@ public class PropertyCreditUtil {
     /**
      * do goPayAction,just for pretend
      *
-     * @param goPayRequest go pay request
+     * @param basePayRequest go pay request
      * @return String return the pay page
      */
-    public static String goPay(GoPayRequest goPayRequest) {
-        String requestJsonString = JSON.toJSONString(goPayRequest);
+    public static String goPay(BasePayRequest basePayRequest) {
+        String requestJsonString = JSON.toJSONString(basePayRequest);
         logger.info("[PropertyCreditUtil.goPay] start goPayRequest={}", requestJsonString);
         HTTP http = getBaseHttp();
         Map<String, String> paramMap = MapUtil.convertToMap(requestJsonString);
-        Map<String, String> headerMap = buildPropertyCreditCommonHeaders(goPayRequest.getCookie());
+        Map<String, String> headerMap = buildPropertyCreditCommonHeaders(basePayRequest.getCookie());
         headerMap.put("Referer", "https://api.zihexin.net/topup-merchant/common/topup?m=d984307c2629212e00b70faaa1d27c82");
         HttpResult httpResult = http.async(GO_PAY_ORDER_URL)
                 .nothrow()
@@ -214,15 +214,15 @@ public class PropertyCreditUtil {
     /**
      * do goPayAction,just for pretend
      *
-     * @param toAlipayRequest to alipay param
+     * @param basePayRequest to alipay param
      * @return String  json
      */
-    public static String toAlipay(ToAlipayRequest toAlipayRequest) {
-        String requestJsonString = JSON.toJSONString(toAlipayRequest);
+    public static String toAlipay(BasePayRequest basePayRequest) {
+        String requestJsonString = JSON.toJSONString(basePayRequest);
         logger.info("[PropertyCreditUtil.toAlipayRequest] start toAlipayRequest={}", requestJsonString);
         HTTP http = getBaseHttp();
         Map<String, String> paramMap = MapUtil.convertToMap(requestJsonString);
-        Map<String, String> headerMap = buildPropertyCreditCommonHeaders(toAlipayRequest.getCookie());
+        Map<String, String> headerMap = buildPropertyCreditCommonHeaders(basePayRequest.getCookie());
         headerMap.put("Referer", "https://api.zihexin.net/topup-merchant/common/topup?m=d984307c2629212e00b70faaa1d27c82");
         HttpResult httpResult = http.async(API.TO_ALIPAY)
                 .nothrow()
@@ -269,14 +269,14 @@ public class PropertyCreditUtil {
     /**
      * to weChatPay,get weChat pay json
      *
-     * @param toWechatPayRequest to we chat pay request
+     * @param basePayRequest to we chat pay request
      * @return String ToWechatPayResult
      */
-    public static ToWechatPayResult toWechatPay(ToWechatPayRequest toWechatPayRequest) {
-        String requestJsonString = JSON.toJSONString(toWechatPayRequest);
+    public static ToWechatPayResult toWechatPay(BasePayRequest basePayRequest) {
+        String requestJsonString = JSON.toJSONString(basePayRequest);
         logger.info("[PropertyCreditUtil.toWechatPay] start toWechatPayRequest={}", requestJsonString);
         Map<String, String> paramMap = MapUtil.convertToMap(requestJsonString);
-        Map<String, String> headersMap = HeaderHelper.buildCommonHeaders(toWechatPayRequest.getCookie());
+        Map<String, String> headersMap = HeaderHelper.buildCommonHeaders(basePayRequest.getCookie());
         enCodeHeadersMap(headersMap);
         HTTP http = getBaseHttp();
         HttpResult httpResult = http.async(API.TO_WECHAT)

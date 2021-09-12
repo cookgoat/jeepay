@@ -1,9 +1,9 @@
-package com.jeequan.jeepay.pay.channel.propertycredit.kits.rs;
+package com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs;
 
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import com.alibaba.fastjson.annotation.JSONField;
-import com.jeequan.jeepay.pay.channel.propertycredit.kits.CS;
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.CS;
 
 /**
  * @author axl rose

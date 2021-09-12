@@ -36,7 +36,18 @@ public enum ApiCodeEnum{
     SYS_OPERATION_FAIL_DELETE(5001, "删除失败"),
     SYS_OPERATION_FAIL_UPDATE(5002, "修改失败"),
     SYS_OPERATION_FAIL_SELETE(5003, "记录不存在"),
-    SYS_PERMISSION_ERROR(5004, "权限错误，当前用户不支持此操作");
+    SYS_PERMISSION_ERROR(5004, "权限错误，当前用户不支持此操作"),
+    /**
+     * pretender order 6000-7000
+     */
+    ORDER_CHARGE_AMOUNT_ILLEGAL(6000, "充值金额不支持"),
+    NO_PRETENDER_ACCOUNT(6001, "不存在可用的伪装账号"),
+    NO_RESELLER_ORDER(6002, "不存在可充值订单"),
+    PRETENDER_ACCOUNT_IS_NOT_LOGIN(6003, "伪装账号未登录"),
+    TO_ALIPAY_FAILED(6004, "跳往支付宝支付失败"),
+    GET_ALIPAY_FAILED(6005, "获取支付宝支付链接失败"),
+
+    ;
 
 
     private int code;

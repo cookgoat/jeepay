@@ -1,4 +1,4 @@
-package com.jeequan.jeepay.pay.channel.propertycredit.kits.rq;
+package com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq;
 
 /**
  * @author axl rose

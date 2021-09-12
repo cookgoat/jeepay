@@ -7,14 +7,14 @@
         <id column="id" property="id" />
         <result column="order_no" property="orderNo" />
         <result column="reseller_id" property="resellerId" />
-        <result column="biz_type" property="bizType" />
+        <result column="product_type" property="productType" />
         <result column="charge_account" property="chargeAccount" />
         <result column="amount" property="amount" />
         <result column="area" property="area" />
         <result column="charge_account_type" property="chargeAccountType" />
         <result column="order_status" property="orderStatus" />
         <result column="match_out_trade_no" property="matchOutTradeNo" />
-        <result column="gmt_match" property="gmtMatch" />
+        <result column="gmt_paying_start" property="gmtPayingStart" />
         <result column="gmt_create" property="gmtCreate" />
         <result column="gmt_update" property="gmtUpdate" />
     </resultMap>

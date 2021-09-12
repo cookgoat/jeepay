@@ -1,8 +1,9 @@
-package com.jeequan.jeepay.pay.channel.propertycredit.kits.model;
+package com.jeequan.jeepay.pay.pretender.propertycredit.kits.model;
 
-import lombok.Data;
-import java.util.List;
 import com.alibaba.fastjson.annotation.JSONField;
+import lombok.Data;
+
+import java.util.List;
 
 
 /**
