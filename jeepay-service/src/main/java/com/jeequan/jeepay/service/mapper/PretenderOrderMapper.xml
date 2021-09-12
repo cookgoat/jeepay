@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeequan.jeepay.service.mapper.PretenderOrderMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.jeequan.jeepay.core.entity.PretenderOrder">
+        <id column="id" property="id" />
+        <result column="biz_type" property="bizType" />
+        <result column="out_trade_no" property="outTradeNo" />
+        <result column="status" property="status" />
+        <result column="pretender_account_id" property="pretenderAccountId" />
+        <result column="amount" property="amount" />
+        <result column="pay_way" property="payWay" />
+        <result column="pay_url" property="payUrl" />
+        <result column="gmt_notify" property="gmtNotify" />
+        <result column="match_reseller_order_no" property="matchResellerOrderNo" />
+        <result column="ext" property="ext" />
+        <result column="gmt_create" property="gmtCreate" />
+        <result column="gmt_update" property="gmtUpdate" />
+    </resultMap>
+
+</mapper>
