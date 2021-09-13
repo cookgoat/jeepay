@@ -40,7 +40,6 @@ public class OrderAssociateMatcherImpl implements OrderAssociateMatcher {
         BaseRq baseRq = new BaseRq();
         baseRq.setChargeAmount(payOrder.getAmount());
         PretenderOrder pretenderOrder = pretenderOrderCreator.createOrder(baseRq);
-        pretenderOrder.getMatchResellerOrderNo();
         payOrder.setChannelOrderNo(pretenderOrder.getOutTradeNo());
         return pretenderOrder.getPayUrl();
     }

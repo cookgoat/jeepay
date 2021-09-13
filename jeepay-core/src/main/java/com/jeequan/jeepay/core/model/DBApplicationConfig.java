@@ -44,6 +44,13 @@ public class DBApplicationConfig implements Serializable {
     /** oss公共读文件地址 **/
     private String ossPublicSiteUrl;
 
+    /**
+     *
+     * 匹配地址
+     *
+     */
+    private String matchOrderUrl;
+
     /** 生成  【jsapi统一收银台跳转地址】 **/
     public String genUniJsapiPayUrl(String payOrderId){
         return getPaySiteUrl() + "/cashier/index.html#/hub/" + JeepayKit.aesEncode(payOrderId);
@@ -67,6 +74,11 @@ public class DBApplicationConfig implements Serializable {
     /** 生成  【支付宝 isv子商户的授权链接地址】 **/
     public String genAlipayIsvsubMchAuthUrl(String isvNo, String mchAppId){
         return getPaySiteUrl() + "/api/channelbiz/alipay/redirectAppToAppAuth/" + isvNo + "_" + mchAppId;
+    }
+
+    /** 生成  【生成订单匹配地址】 **/
+    public String genMatchOrderUrl(String orderNo){
+        return getMatchOrderUrl() + JeepayKit.aesEncode(orderNo) ;
     }
 
 }
