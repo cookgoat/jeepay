@@ -9,11 +9,11 @@ import lombok.Data;
 @Data
 public class FacePrice {
 
-    private Integer facePrice;
+    private Long facePrice;
 
-    private Double discount;
+    private Long discount;
 
-    private Integer limitPrice;
+    private Long limitPrice;
 
     private boolean isDiscount;
 

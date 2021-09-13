@@ -6,7 +6,8 @@ package com.jeequan.jeepay.pay.pretender.cs;
  */
 public enum ProductTypeEnum {
 
-    JD_E_CARD("JD_E_CARD","京东E卡");
+    JD_E_CARD("JD_E_CARD","京东E卡"),
+    CTRIP("CTRIP","携程任我行");
 
     private String code;
 

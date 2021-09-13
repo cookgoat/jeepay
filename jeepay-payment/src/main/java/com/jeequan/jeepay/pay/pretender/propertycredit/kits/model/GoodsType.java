@@ -19,9 +19,9 @@ public class GoodsType {
    private String chzTypeId;
 
    @JSONField(name="custom_value")
-   List<Goods> customValue;
+  private Goods customValue;
 
    @JSONField(name="face_price_list")
-   List<Goods> facePriceList;
+   private List<Goods> facePriceList;
 
 }

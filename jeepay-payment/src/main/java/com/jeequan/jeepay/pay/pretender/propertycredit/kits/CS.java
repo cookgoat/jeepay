@@ -105,6 +105,7 @@ public class CS {
 
     public static final String HOST = "api.zihexin.net";
     public static final String ORIGIN = "https://api.zihexin.net";
+    public static final String IS_DISCOUNT = "1";
 
 
 

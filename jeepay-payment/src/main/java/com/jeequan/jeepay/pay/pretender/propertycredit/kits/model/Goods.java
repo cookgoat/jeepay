@@ -10,7 +10,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 @Data
 public class Goods {
     @JSONField(name="face_price")
-    private int facePrice;
+    private String facePrice;
 
     @JSONField(name="goods_name")
     private String goodsName;

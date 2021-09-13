@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Map;
 
@@ -101,7 +100,7 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
         createOrderRequest.setRechargeAccount(pretenderAccount.getAccount());
         createOrderRequest.setRechargeType(facePrice.getGoodType());
         Long discount = AmountUtil.calPercentageFee(resellerOrder.getAmount(),
-                BigDecimal.valueOf(facePrice.getDiscount()).divide(new BigDecimal(100),6, RoundingMode.HALF_UP));
+                BigDecimal.valueOf(facePrice.getDiscount()));
         Long amount = resellerOrder.getAmount() + discount;
         String amountDollar = AmountUtil.convertCent2Dollar(amount);
         createOrderRequest.setRechargeAmount(amountDollar);
