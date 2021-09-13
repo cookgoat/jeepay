@@ -42,6 +42,8 @@ public class GoodsWrapper {
         if(!goodsTypeOpt.isPresent()){
             throw new IllegalArgumentException("jd goods type is not exist");
         }
+        GoodsType goodsType = goodsTypeOpt.get();
+        goodsType.setBrandId(brandOpt.get().getBrandId());
         return goodsTypeOpt.get();
     }
 

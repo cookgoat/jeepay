@@ -15,11 +15,11 @@
  */
 package com.jeequan.jeepay.core.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @Description: 金额工具类
@@ -36,6 +36,9 @@ public class AmountUtil {
      * @return
      */
     public static String convertDollar2Cent(String str) {
+        if(StringUtils.isBlank(str)){
+            return  "0";
+        }
         DecimalFormat df = new DecimalFormat("0.00");
         StringBuffer sb = df.format(Double.parseDouble(str),
                 new StringBuffer(), new FieldPosition(0));
@@ -100,6 +103,18 @@ public class AmountUtil {
             return "";
         }
         return new BigDecimal(s).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+    }
+
+    /**
+     * 将Long "分"转换成"元"（长格式），如：100分被转换为1.00元。
+     * @param s
+     * @return
+     */
+    public static String convertCent2Dollar(Long s,int scale){
+        if(s == null) {
+            return "";
+        }
+        return new BigDecimal(s).divide(new BigDecimal(100)).setScale(scale, BigDecimal.ROUND_HALF_UP).toString();
     }
 
     /**

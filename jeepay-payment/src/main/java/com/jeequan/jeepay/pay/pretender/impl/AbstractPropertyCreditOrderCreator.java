@@ -97,12 +97,12 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
         createOrderRequest.setCookie(pretenderAccount.getCertificate());
         createOrderRequest.setGoodsId(facePrice.getGoodsId());
         createOrderRequest.setRechargeProduct(facePrice.getProductCode());
-        createOrderRequest.setRechargeAccount(pretenderAccount.getAccount());
+        createOrderRequest.setRechargeAccount(resellerOrder.getChargeAccount());
         createOrderRequest.setRechargeType(facePrice.getGoodType());
         Long discount = AmountUtil.calPercentageFee(resellerOrder.getAmount(),
                 BigDecimal.valueOf(facePrice.getDiscount()));
         Long amount = resellerOrder.getAmount() + discount;
-        String amountDollar = AmountUtil.convertCent2Dollar(amount);
+        String amountDollar = AmountUtil.convertCent2Dollar(amount,0);
         createOrderRequest.setRechargeAmount(amountDollar);
         return createOrderRequest;
     }
@@ -176,6 +176,7 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
         pretenderOrder.setPayUrl(payUrl);
         pretenderOrder.setPayWay(getPayWay());
         pretenderOrder.setStatus(PretenderOrderStatusEnum.PAYING.getCode());
+        pretenderOrder.setProductType(getProductTypeEnum().getCode());
         boolean isSaveSuccess = pretenderOrderService.save(pretenderOrder);
         if (!isSaveSuccess) {
             logger.error("[AbstractPropertyCreditOrderCreator.doCreatePretenderOrder] failed ,save pretender order failed,pretenderAccount={}", pretenderAccount);

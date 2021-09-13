@@ -63,7 +63,7 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
 
     public void checkBaseRq(BaseRq baseRq) {
         if (baseRq == null ||
-                baseRq.getChargeAmount() == null || extendParamCheck(baseRq)) {
+                baseRq.getChargeAmount() == null || !extendParamCheck(baseRq)) {
             throw new BizException(PARAMS_ERROR);
         }
     }

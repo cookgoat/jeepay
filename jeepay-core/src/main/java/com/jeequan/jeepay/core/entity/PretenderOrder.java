@@ -92,5 +92,9 @@ public class PretenderOrder implements Serializable {
      */
     private Date gmtUpdate;
 
+    /**
+     * 产品类型
+     */
+    private String productType;
 
 }

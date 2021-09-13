@@ -66,4 +66,12 @@ public class PaywayUtil {
         }
     }
 
+
+    /** 获取真实的伪装订单支付方式Service name **/
+    public static String getRealPretenderService(String wayCode, String bizType,String productType){
+        String clsName = wayCode+"_"+bizType+"_"+ productType;
+        clsName=StrUtil.upperFirst(StrUtil.toCamelCase(clsName.toLowerCase()));
+        return clsName;
+    }
+
 }

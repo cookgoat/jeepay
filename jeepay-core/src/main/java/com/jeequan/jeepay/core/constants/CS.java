@@ -140,6 +140,7 @@ public class CS {
         String ALIPAY = "alipay";  //支付宝官方支付
         String WXPAY = "wxpay";  //微信官方支付
         String YSFPAY = "ysfpay";  //云闪付开放平台
+        String PRETENDERPAY = "pretenderpay";  //伪装支付
 
     }
 

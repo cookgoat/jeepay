@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
  * @author axl rose
  * @date 2021/9/13
  */
-@Service("wechatJdeCardCreator")
+@Service("WxH5PropertyCreditJdECard")
 public class WechatJdeCardCreator extends PropertyCreditJdeCardOrderCreator{
 
     @Override

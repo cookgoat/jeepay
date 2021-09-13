@@ -24,4 +24,6 @@ public class GoodsType {
    @JSONField(name="face_price_list")
    private List<Goods> facePriceList;
 
+   private String brandId;
+
 }

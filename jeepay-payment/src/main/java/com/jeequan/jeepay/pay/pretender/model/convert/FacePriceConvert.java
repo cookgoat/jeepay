@@ -28,6 +28,7 @@ public class FacePriceConvert {
         }
         if (goodsType.getCustomValue() != null) {
             FacePrice facePrice = FacePriceConvert.convertToFacePrice(goodsType, goodsType.getCustomValue());
+            facePrice.setCustom(true);
             facePriceList.add(facePrice);
         }
         return facePriceList;
@@ -35,10 +36,12 @@ public class FacePriceConvert {
 
     public static FacePrice convertToFacePrice(GoodsType goodsType, Goods goods) {
         FacePrice facePrice = new FacePrice();
+        facePrice.setProductCode(goodsType.getBrandId());
         facePrice.setFacePrice(Long.valueOf(AmountUtil.convertDollar2Cent(goods.getFacePrice())));
+
         facePrice.setLimitPrice(Long.valueOf(AmountUtil.convertDollar2Cent(goods.getLimitPrice())));
         facePrice.setCustom(false);
-        facePrice.setDiscount(StringUtils.equalsIgnoreCase(goods.getIsDiscount(), IS_DISCOUNT));
+        facePrice.setNeedDiscount(StringUtils.equalsIgnoreCase(goods.getIsDiscount(), IS_DISCOUNT));
         facePrice.setDiscount(BigDecimal.valueOf(Double.valueOf(goods.getDiscount()))
                 .divide(new BigDecimal(100), 6, RoundingMode.HALF_UP).longValue());
         facePrice.setGoodType(goodsType.getChzTypeId());

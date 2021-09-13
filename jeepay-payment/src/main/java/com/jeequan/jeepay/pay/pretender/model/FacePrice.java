@@ -15,7 +15,7 @@ public class FacePrice {
 
     private Long limitPrice;
 
-    private boolean isDiscount;
+    private boolean isNeedDiscount;
 
     private boolean isCustom;
 
