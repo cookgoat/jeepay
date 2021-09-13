@@ -153,7 +153,7 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
      * @param productType productType
      * @return ResellerOrder
      */
-    private ResellerOrder  findMatchedResellerOrder(Integer chargeAmount,String productType){
+    private ResellerOrder  findMatchedResellerOrder(Long chargeAmount,String productType){
         ResellerOrder resellerOrder  =resellerOrderService.getOne(ResellerOrder.gw().eq(ResellerOrder::getAmount,chargeAmount).
                 eq(ResellerOrder::getProductType,productType).eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.WAITING_PAY),false );
         if(resellerOrder==null){

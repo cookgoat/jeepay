@@ -8,5 +8,5 @@ import lombok.Data;
  */
 @Data
 public class BaseRq {
-  public  Integer  chargeAmount;
+  public  Long  chargeAmount;
 }
