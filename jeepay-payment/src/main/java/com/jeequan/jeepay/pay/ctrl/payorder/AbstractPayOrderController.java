@@ -16,8 +16,6 @@
 package com.jeequan.jeepay.pay.ctrl.payorder;
 
 import cn.hutool.core.date.DateUtil;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.jeequan.jeepay.components.mq.model.PayOrderDivisionMQ;
 import com.jeequan.jeepay.components.mq.model.PayOrderReissueMQ;
 import com.jeequan.jeepay.components.mq.vender.IMQSender;
 import com.jeequan.jeepay.core.constants.CS;
@@ -27,7 +25,10 @@ import com.jeequan.jeepay.core.entity.MchPayPassage;
 import com.jeequan.jeepay.core.entity.PayOrder;
 import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.model.ApiRes;
-import com.jeequan.jeepay.core.utils.*;
+import com.jeequan.jeepay.core.utils.AmountUtil;
+import com.jeequan.jeepay.core.utils.SeqKit;
+import com.jeequan.jeepay.core.utils.SpringBeansUtil;
+import com.jeequan.jeepay.core.utils.StringKit;
 import com.jeequan.jeepay.pay.channel.IPaymentService;
 import com.jeequan.jeepay.pay.ctrl.ApiController;
 import com.jeequan.jeepay.pay.exception.ChannelException;
@@ -39,7 +40,6 @@ import com.jeequan.jeepay.pay.rqrs.payorder.UnifiedOrderRS;
 import com.jeequan.jeepay.pay.rqrs.payorder.payway.QrCashierOrderRQ;
 import com.jeequan.jeepay.pay.rqrs.payorder.payway.QrCashierOrderRS;
 import com.jeequan.jeepay.pay.service.ConfigContextService;
-import com.jeequan.jeepay.pay.service.PayMchNotifyService;
 import com.jeequan.jeepay.pay.service.PayOrderProcessService;
 import com.jeequan.jeepay.service.impl.MchPayPassageService;
 import com.jeequan.jeepay.service.impl.PayOrderService;
@@ -194,7 +194,8 @@ public abstract class AbstractPayOrderController extends ApiController {
             return packageApiResByPayOrder(bizRQ, bizRS, payOrder);
 
         } catch (BizException e) {
-            return ApiRes.customFail(e.getMessage());
+            log.error("系统异常：{}", e);
+            return e.getApiRes();
 
         } catch (ChannelException e) {
 

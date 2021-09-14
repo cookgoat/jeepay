@@ -11,8 +11,13 @@ import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.utils.JsoupUtils;
 import com.jeequan.jeepay.core.utils.MapUtil;
 import com.jeequan.jeepay.core.utils.OkHttpsHelp;
-import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.*;
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.BasePayRequest;
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.CreateOrderRequest;
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.GetRechargeAccountLogRequest;
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.QueryOrderRequest;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.BaseResult;
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.CreateOrderResult;
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.QueryOrderResult;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.ToWechatPayResult;
 import okhttp3.Cookie;
 import org.slf4j.Logger;
@@ -64,7 +69,7 @@ public class PropertyCreditUtil {
     public static String getRechargeAccountLog(GetRechargeAccountLogRequest getRechargeAccountLogRequest) {
         logger.info("[PropertyCreditUtil.getRechargeAccountLog] start getRechargeAccountLog,getRechargeAccountLogRequest={}", JSON.toJSON(getRechargeAccountLogRequest));
         HTTP http = getBaseHttp();
-        Map maps = JSON.parseObject(JSON.toJSONString(getRechargeAccountLogRequest));
+        Map<String, Object> maps = JSON.parseObject(JSON.toJSONString(getRechargeAccountLogRequest));
         HttpResult httpResult = http.async(API.RECHARGE_ACCOUNT_LOG)
                 .nothrow()
                 .addBodyPara(maps)
@@ -313,6 +318,35 @@ public class PropertyCreditUtil {
         }
     }
 
+
+    /**
+     * query order
+     *
+     * @param queryOrderRequest query order request
+     * @return QueryOrderResult order info
+     */
+    public static QueryOrderResult queryOrder(QueryOrderRequest queryOrderRequest) {
+        logger.info("[PropertyCreditUtil.queryOrder] start queryOrder,queryOrderRequest={}", JSON.toJSONString(queryOrderRequest));
+        HTTP http = getBaseHttp();
+        Map<String, Object> paramMap = MapUtil.objectToMap(queryOrderRequest);
+        HttpResult result = http.async(API.QUERY_ORDER)
+                .nothrow()
+                .addBodyPara(paramMap)
+                .addHeader(buildPropertyCreditCommonHeaders(queryOrderRequest.getCookie()))
+                .post().getResult();
+        OkHttpsHelp<QueryOrderResult> okHttpsHelp = new OkHttpsHelp<>();
+        QueryOrderResult queryOrderResult = okHttpsHelp.handleHttpResult(result, false, QueryOrderResult.class);
+        if (!queryOrderResult.isSuccess()) {
+            logger.error("[PropertyCreditUtil.queryOrderResult]invoke PropertyCredit failed,queryOrderRequest={},queryOrderResult={}",
+                    JSON.toJSONString(queryOrderRequest), JSON.toJSONString(queryOrderResult));
+            throw new BizException("PropertyCreditUtil.createOrder failed");
+        }
+        logger.info("[PropertyCreditUtil.createOrder]invoke PropertyCredit success,queryOrderRequest={},queryOrderResult={}",
+                JSON.toJSONString(queryOrderRequest), JSON.toJSONString(queryOrderResult));
+        return queryOrderResult;
+    }
+
+
     private static void enCodeHeadersMap(Map<String, String> headersMap) {
         headersMap.replaceAll((k, v) -> UrlParamHelper.encodeHeadInfo(headersMap.get(k)));
     }
@@ -323,6 +357,5 @@ public class PropertyCreditUtil {
         headers.put("Origin", ORIGIN);
         return headers;
     }
-
 
 }

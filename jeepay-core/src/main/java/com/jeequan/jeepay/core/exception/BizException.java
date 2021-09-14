@@ -47,4 +47,6 @@ public class BizException extends RuntimeException{
 		super(apiRes.getMsg());
 		this.apiRes = apiRes;
 	}
+
+
 }

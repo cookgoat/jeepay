@@ -27,7 +27,6 @@ import com.jeequan.jeepay.core.entity.IsvInfo;
 import com.jeequan.jeepay.core.entity.MchInfo;
 import com.jeequan.jeepay.core.entity.PayOrder;
 import com.jeequan.jeepay.core.entity.PayWay;
-import com.jeequan.jeepay.core.utils.AmountUtil;
 import com.jeequan.jeepay.service.mapper.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +97,15 @@ public class PayOrderService extends ServiceImpl<PayOrderMapper, PayOrder> {
                 .eq(PayOrder::getPayOrderId, payOrderId).eq(PayOrder::getState, PayOrder.STATE_ING));
     }
 
+    /** 更新订单状态  【支付中】 --》 【支付取消】 **/
+    public boolean updateIng2Cancle(String payOrderId, String channelOrderNo, String channelUserId){
+        PayOrder updateRecord = new PayOrder();
+        updateRecord.setState(PayOrder.STATE_CANCEL);
+        updateRecord.setChannelOrderNo(channelOrderNo);
+        updateRecord.setChannelUser(channelUserId);
+        return update(updateRecord, new LambdaUpdateWrapper<PayOrder>()
+                .eq(PayOrder::getPayOrderId, payOrderId).eq(PayOrder::getState, PayOrder.STATE_ING));
+    }
 
     /** 更新订单状态  【支付中】 --》 【支付成功/支付失败】 **/
     public boolean updateIng2SuccessOrFail(String payOrderId, Byte updateState, String channelOrderNo, String channelUserId, String channelErrCode, String channelErrMsg){

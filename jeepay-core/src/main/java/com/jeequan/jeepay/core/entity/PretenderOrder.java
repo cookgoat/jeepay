@@ -3,6 +3,7 @@ package com.jeequan.jeepay.core.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -25,6 +26,11 @@ import java.util.Date;
 public class PretenderOrder implements Serializable {
 
     private static final long serialVersionUID=1L;
+
+    public static final LambdaQueryWrapper<PretenderOrder> gw(){
+        return new LambdaQueryWrapper<>();
+    }
+
 
     /**
      * 主键
@@ -97,4 +103,8 @@ public class PretenderOrder implements Serializable {
      */
     private String productType;
 
+    /**
+     * 过期时间
+     */
+   private  Date gmtExpired;
 }

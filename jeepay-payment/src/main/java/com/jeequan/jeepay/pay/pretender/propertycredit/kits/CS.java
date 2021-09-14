@@ -14,6 +14,12 @@ public class CS {
          * success of api resp
          */
         String SUCCESS_CODE = "00";
+
+        /**
+         * success of api resp
+         */
+        String WAIT_CODE = "04";
+
         /**
          * isPaying of api resp
          */

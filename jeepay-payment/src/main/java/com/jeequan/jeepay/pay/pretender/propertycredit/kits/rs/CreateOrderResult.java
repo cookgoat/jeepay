@@ -1,7 +1,6 @@
-package com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq;
+package com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs;
 
 import lombok.Data;
-import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.BaseResult;
 
 /**
  * @author axl rose

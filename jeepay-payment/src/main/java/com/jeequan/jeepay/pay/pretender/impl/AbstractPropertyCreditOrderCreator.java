@@ -16,7 +16,7 @@ import com.jeequan.jeepay.pay.pretender.propertycredit.kits.PropertyCreditUtil;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.StringFinder;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.BasePayRequest;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.CreateOrderRequest;
-import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.CreateOrderResult;
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.CreateOrderResult;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.GetRechargeAccountLogRequest;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.BaseResult;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.ToWechatPayResult;
@@ -88,7 +88,7 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
         } else {
             payUrl = getWechatUrl(basePayRequest);
         }
-        return savePretenderOrder(resellerOrder, pretenderAccount, createOrderResult, payUrl);
+        return buildPretenderOrder(resellerOrder, pretenderAccount, createOrderResult, payUrl);
     }
 
 
@@ -165,7 +165,7 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
         return payUrl;
     }
 
-    private PretenderOrder savePretenderOrder(ResellerOrder resellerOrder, PretenderAccount pretenderAccount, CreateOrderResult createOrderResult, String payUrl) {
+    private PretenderOrder buildPretenderOrder(ResellerOrder resellerOrder, PretenderAccount pretenderAccount, CreateOrderResult createOrderResult, String payUrl) {
         PretenderOrder pretenderOrder = new PretenderOrder();
         pretenderOrder.setAmount(resellerOrder.getAmount());
         pretenderOrder.setGmtCreate(new Date());
@@ -177,11 +177,6 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
         pretenderOrder.setPayWay(getPayWay());
         pretenderOrder.setStatus(PretenderOrderStatusEnum.PAYING.getCode());
         pretenderOrder.setProductType(getProductTypeEnum().getCode());
-        boolean isSaveSuccess = pretenderOrderService.save(pretenderOrder);
-        if (!isSaveSuccess) {
-            logger.error("[AbstractPropertyCreditOrderCreator.doCreatePretenderOrder] failed ,save pretender order failed,pretenderAccount={}", pretenderAccount);
-            throw new BizException(SYS_OPERATION_FAIL_CREATE);
-        }
         return pretenderOrder;
     }
 

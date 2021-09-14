@@ -36,8 +36,6 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
 
     @Autowired protected ResellerOrderService resellerOrderService;
 
-
-
     @Autowired protected PretenderOrderService pretenderOrderService;
 
 
@@ -55,6 +53,7 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
         //do create order
         PretenderOrder pretenderOrder = doCreateOrder(resellerOrder,pretenderAccount,facePrice);
         //update the reseller order status to "PAYING"
+        savePretenderOrder(pretenderOrder);
         updateResellerOrderToPaying(resellerOrder,pretenderOrder);
         logger.info("end [AbstractPretenderCreator.createOrder], success bizType={},productType={},baseRq={},pretenderOrder={}", bizType,
                 productType, baseRq,pretenderOrder);
@@ -162,17 +161,24 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
         return  resellerOrder;
     }
 
+    public void savePretenderOrder(PretenderOrder pretenderOrder){
+        boolean isSaveSuccess = pretenderOrderService.save(pretenderOrder);
+        if (!isSaveSuccess) {
+            logger.error("[AbstractPropertyCreditOrderCreator.savePretenderOrder] failed ,save pretender order failed,pretenderAccount={}", pretenderOrder.getPretenderAccountId());
+            throw new BizException(SYS_OPERATION_FAIL_CREATE);
+        }
+    }
+
     public void updateResellerOrderToPaying(ResellerOrder resellerOrder,PretenderOrder pretenderOrder){
         boolean isSuccess = resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>()
                 .set(ResellerOrder::getGmtPayingStart, new Date())
-                .set(ResellerOrder::getMatchOutTradeNo,pretenderOrder.getMatchResellerOrderNo())
                 .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.PAYING.getCode())
-                .eq(ResellerOrder::getResellerId, resellerOrder.getResellerId()));
+                .set(ResellerOrder::getGmtUpdate, new Date())
+                .eq(ResellerOrder::getId, resellerOrder.getId()));
         if (!isSuccess) {
             logger.error("[AbstractPropertyCreditOrderCreator.doCreateOrder] failed update resellerOrder failed ,save pretender order failed,pretenderOrder={}", pretenderOrder);
             throw new BizException(SYS_OPERATION_FAIL_CREATE);
         }
     }
-
 
 }

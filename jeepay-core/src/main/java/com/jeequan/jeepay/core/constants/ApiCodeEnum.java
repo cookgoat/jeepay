@@ -46,6 +46,7 @@ public enum ApiCodeEnum{
     PRETENDER_ACCOUNT_IS_NOT_LOGIN(6003, "伪装账号未登录"),
     TO_ALIPAY_FAILED(6004, "跳往支付宝支付失败"),
     GET_ALIPAY_FAILED(6005, "获取支付宝支付链接失败"),
+    QUERY_PRETENDER_ORDER_FAILED(6006, "查询伪装订单状态失败"),
 
     ;
 
