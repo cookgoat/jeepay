@@ -10,7 +10,7 @@
         <result column="product_type" property="productType" />
         <result column="charge_account" property="chargeAccount" />
         <result column="amount" property="amount" />
-        <result column="area" property="area" />
+        <result column="query_flag" property="queryFlag" />
         <result column="charge_account_type" property="chargeAccountType" />
         <result column="order_status" property="orderStatus" />
         <result column="match_out_trade_no" property="matchOutTradeNo" />

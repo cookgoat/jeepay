@@ -1,4 +1,6 @@
-package com.jeequan.jeepay.pay.pretender.cs;
+package com.jeequan.jeepay.core.constants;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author axl rose
@@ -25,5 +27,13 @@ public enum BizTypeEnum {
         return this.msg;
     }
 
+    public static boolean isRightBizType(String code){
+        for(BizTypeEnum bizTypeEnum: BizTypeEnum.values()){
+            if(StringUtils.equalsIgnoreCase(bizTypeEnum.getCode(),code)){
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

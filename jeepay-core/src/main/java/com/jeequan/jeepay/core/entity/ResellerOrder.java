@@ -2,6 +2,7 @@ package com.jeequan.jeepay.core.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.jeequan.jeepay.core.model.BaseModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -21,7 +22,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("t_reseller_order")
-public class ResellerOrder implements Serializable {
+public class ResellerOrder extends BaseModel implements Serializable {
 
     private static final long serialVersionUID=1L;
 
@@ -60,9 +61,9 @@ public class ResellerOrder implements Serializable {
     private Long amount;
 
     /**
-     * 充值账号区域，存在区域维度，可为空
+     * 查询标志，不同业务类型的订单有不同的查询标志
      */
-    private String area;
+    private String queryFlag;
 
     /**
      * 充值账号类型，分为手机号以及上游app三方账号

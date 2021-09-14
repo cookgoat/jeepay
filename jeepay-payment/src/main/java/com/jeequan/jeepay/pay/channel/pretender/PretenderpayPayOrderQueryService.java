@@ -11,7 +11,7 @@ import com.jeequan.jeepay.core.utils.DateUtil;
 import com.jeequan.jeepay.pay.channel.IPayOrderQueryService;
 import com.jeequan.jeepay.pay.model.MchAppConfigContext;
 import com.jeequan.jeepay.pay.pretender.cs.PretenderOrderStatusEnum;
-import com.jeequan.jeepay.pay.pretender.cs.ResellerOrderStatusEnum;
+import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.PropertyCreditUtil;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.QueryOrderRequest;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.QueryOrderResult;

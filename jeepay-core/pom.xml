@@ -93,6 +93,25 @@
       <version>${okhttps.version}</version>
     </dependency>
 
+
+    <!-- 引入 easypoi -->
+    <dependency>
+      <groupId>cn.afterturn</groupId>
+      <artifactId>easypoi-spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.afterturn</groupId>
+      <artifactId>easypoi-base</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.afterturn</groupId>
+      <artifactId>easypoi-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>cn.afterturn</groupId>
+      <artifactId>easypoi-annotation</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>

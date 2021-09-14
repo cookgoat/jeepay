@@ -1,19 +1,18 @@
-package com.jeequan.jeepay.pay.pretender.cs;
+package com.jeequan.jeepay.core.constants;
 
 /**
  * @author axl rose
- * @date 2021/9/12
+ * @date 2021/9/14
  */
-public enum ProductTypeEnum {
-
-    JD_E_CARD("JD_E_CARD","京东E卡"),
-    CTRIP("CTRIP","携程任我行");
+public enum ResellerOrderChargeAccountType {
+    MOBILE("MOBILE","手机号"),
+    PLATFORM_ACCOUNT("PLATFORM_ACCOUNT","平台账号");
 
     private String code;
 
     private String msg;
 
-    ProductTypeEnum(String code, String msg) {
+    ResellerOrderChargeAccountType(String code, String msg) {
         this.code = code;
         this.msg = msg;
     }
@@ -25,6 +24,5 @@ public enum ProductTypeEnum {
     public String getMsg() {
         return this.msg;
     }
-
 
 }

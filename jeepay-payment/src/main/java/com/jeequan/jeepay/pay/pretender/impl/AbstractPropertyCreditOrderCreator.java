@@ -7,7 +7,7 @@ import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.utils.AmountUtil;
 import com.jeequan.jeepay.pay.pretender.AbstractPretenderCreator;
 import com.jeequan.jeepay.pay.pretender.PretenderOrderCreator;
-import com.jeequan.jeepay.pay.pretender.cs.BizTypeEnum;
+import com.jeequan.jeepay.core.constants.BizTypeEnum;
 import com.jeequan.jeepay.pay.pretender.cs.PretenderOrderStatusEnum;
 import com.jeequan.jeepay.pay.pretender.model.FacePrice;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.AlipayHelper;

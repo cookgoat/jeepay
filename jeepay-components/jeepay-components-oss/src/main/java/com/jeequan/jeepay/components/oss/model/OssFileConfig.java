@@ -16,6 +16,8 @@
 package com.jeequan.jeepay.components.oss.model;
 
 import com.jeequan.jeepay.components.oss.constant.OssSavePlaceEnum;
+import com.jeequan.jeepay.core.constants.BizTypeEnum;
+import com.jeequan.jeepay.core.constants.ProductTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -57,6 +59,9 @@ public class OssFileConfig {
         ALL_BIZ_TYPE_MAP.put(BIZ_TYPE.AVATAR, new OssFileConfig(OssSavePlaceEnum.PUBLIC, IMG_SUFFIX, DEFAULT_MAX_SIZE) );
         ALL_BIZ_TYPE_MAP.put(BIZ_TYPE.IF_BG, new OssFileConfig(OssSavePlaceEnum.PUBLIC, IMG_SUFFIX, DEFAULT_MAX_SIZE) );
         ALL_BIZ_TYPE_MAP.put(BIZ_TYPE.CERT, new OssFileConfig(OssSavePlaceEnum.PRIVATE, new HashSet<>(Arrays.asList(ALL_SUFFIX_FLAG)), DEFAULT_MAX_SIZE) );
+        ALL_BIZ_TYPE_MAP.put(ProductTypeEnum.JD_E_CARD.getCode(), new OssFileConfig(OssSavePlaceEnum.PRIVATE, new HashSet<>(Arrays.asList("xls,xlsx")), DEFAULT_MAX_SIZE) );
+        ALL_BIZ_TYPE_MAP.put(ProductTypeEnum.CTRIP.getCode(), new OssFileConfig(OssSavePlaceEnum.PRIVATE, new HashSet<>(Arrays.asList("xls,xlsx")), DEFAULT_MAX_SIZE) );
+        ALL_BIZ_TYPE_MAP.put(BizTypeEnum.PROPERTY_CREDIT.getCode(), new OssFileConfig(OssSavePlaceEnum.PRIVATE, new HashSet<>(Arrays.asList("xls,xlsx")), DEFAULT_MAX_SIZE) );
     }
 
     /** 存储位置 **/
