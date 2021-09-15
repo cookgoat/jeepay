@@ -10,8 +10,9 @@ import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.core.entity.ResellerOrder;
 import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.model.ApiRes;
+import com.jeequan.jeepay.core.utils.AmountUtil;
 import com.jeequan.jeepay.core.utils.FileKit;
-import com.jeequan.jeepay.mgr.ctrl.CurrentUserController;
+import com.jeequan.jeepay.mgr.ctrl.CommonCtrl;
 import com.jeequan.jeepay.service.ResellerOrderImportService;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
 import com.jeequan.jeepay.service.rq.ResellerOrderImportRequest;
@@ -29,13 +30,14 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/resellerOrders")
 @Slf4j
-public class ResellerOrderController extends CurrentUserController {
+public class ResellerOrderController extends CommonCtrl {
 
     @Autowired private ResellerOrderImportService resellerOrderImportService;
 
     @Autowired private ResellerOrderService resellerOrderService;
 
     /** 导入 */
+    @PreAuthorize("hasAuthority('ENT_RESELLER_ORDER_GROUP_IMPORT')")
     @PostMapping("/{productType}/")
     public ApiRes batchUpload(@RequestParam("file") MultipartFile file, @PathVariable("productType") String productType) {
 
@@ -76,7 +78,7 @@ public class ResellerOrderController extends CurrentUserController {
     }
 
 
-    @PreAuthorize("hasAnyAuthority('ENT_PC_WAY_LIST', 'ENT_PAY_ORDER_SEARCH_PAY_WAY')")
+    @PreAuthorize("hasAnyAuthority('ENT_RESELLER_ORDER_GROUP_LIST')")
     @GetMapping
     public ApiRes list() {
 
@@ -96,7 +98,7 @@ public class ResellerOrderController extends CurrentUserController {
             condition.like(ResellerOrder::getChargeAccount, resellerOrder.getChargeAccount());
         }
         if(resellerOrder.getAmount()!=null){
-            condition.eq(ResellerOrder::getAmount, resellerOrder.getAmount());
+            condition.eq(ResellerOrder::getAmount, AmountUtil.convertDollar2Cent(resellerOrder.getAmount()+""));
         }
         if(StringUtils.isNotBlank(resellerOrder.getQueryFlag())){
             condition.like(ResellerOrder::getQueryFlag, resellerOrder.getQueryFlag());
@@ -120,11 +122,14 @@ public class ResellerOrderController extends CurrentUserController {
         }
         condition.orderByDesc(ResellerOrder::getGmtCreate);
         IPage<ResellerOrder> pages = resellerOrderService.page(getIPage(true), condition);
+        for(ResellerOrder tempOrder:pages.getRecords()){
+            tempOrder.setAmount(Long.valueOf(AmountUtil.convertCent2Dollar(tempOrder.getAmount(),0)));
+        }
         return ApiRes.page(pages);
     }
 
 
-    @PreAuthorize("hasAuthority('ENT_PAY_ORDER_VIEW')")
+    @PreAuthorize("hasAuthority('ENT_RESELLER_ORDER_GROUP_VIEW')")
     @RequestMapping(value="/{resellerOrderId}", method = RequestMethod.GET)
     public ApiRes detail(@PathVariable("resellerOrderId") Long resellerOrderId) {
         ResellerOrder resellerOrder = resellerOrderService.getById(resellerOrderId);
@@ -134,7 +139,7 @@ public class ResellerOrderController extends CurrentUserController {
         return ApiRes.ok(resellerOrder);
     }
 
-    @PreAuthorize("hasAuthority('ENT_PC_WAY_EDIT')")
+    @PreAuthorize("hasAuthority('ENT_RESELLER_ORDER_GROUP_EDIT')")
     @PutMapping("/{resellerOrderId}")
     @MethodLog(remark = "更新支付方式")
     public ApiRes update(@PathVariable("resellerOrderId") Long resellerOrderId) {
@@ -148,7 +153,7 @@ public class ResellerOrderController extends CurrentUserController {
     }
 
 
-    @PreAuthorize("hasAuthority('ENT_PC_WAY_DEL')")
+    @PreAuthorize("hasAuthority('ENT_RESELLER_ORDER_GROUP_DELETE')")
     @DeleteMapping("/{resellerOrderId}")
     @MethodLog(remark = "删除支付方式")
     public ApiRes delete(@PathVariable("resellerOrderId") Long resellerOrderId) {

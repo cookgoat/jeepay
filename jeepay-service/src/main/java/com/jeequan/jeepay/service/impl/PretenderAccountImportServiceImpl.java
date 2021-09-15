@@ -12,13 +12,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import static com.jeequan.jeepay.core.constants.BizTypeEnum.isRightBizType;
-import static com.jeequan.jeepay.core.utils.ExcelUtil.isExcelFile;
 
 /**
  * @author axl rose
@@ -47,15 +45,15 @@ public class PretenderAccountImportServiceImpl implements PretenderAccountImport
            }
         } catch (Exception e) {
             e.printStackTrace();
+            throw new BizException(e.getMessage());
         }
     }
 
 
-    private void checkParam(PretenderAccountImportRequest pretenderAccountImportRequest) throws IOException {
+    private void checkParam(PretenderAccountImportRequest pretenderAccountImportRequest) {
         if (pretenderAccountImportRequest == null ||
                 StringUtils.isBlank(pretenderAccountImportRequest.getBizType()) ||
                 pretenderAccountImportRequest.getMultipartFile() == null ||
-                !isExcelFile(pretenderAccountImportRequest.getMultipartFile().getInputStream()) ||
                 !isRightBizType(pretenderAccountImportRequest.getBizType())) {
             throw new BizException(ApiCodeEnum.PARAMS_ERROR);
         }

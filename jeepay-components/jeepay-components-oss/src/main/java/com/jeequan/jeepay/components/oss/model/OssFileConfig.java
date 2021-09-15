@@ -55,13 +55,16 @@ public class OssFileConfig {
     public static final Long DEFAULT_MAX_SIZE = 5 * 1024 * 1024L;
 
     private static final Map<String, OssFileConfig> ALL_BIZ_TYPE_MAP = new HashMap<>();
+
+    public static final Set EXCEL_SUFFIX = new HashSet(Arrays.asList("xls", "xlsx"));
+
     static{
         ALL_BIZ_TYPE_MAP.put(BIZ_TYPE.AVATAR, new OssFileConfig(OssSavePlaceEnum.PUBLIC, IMG_SUFFIX, DEFAULT_MAX_SIZE) );
         ALL_BIZ_TYPE_MAP.put(BIZ_TYPE.IF_BG, new OssFileConfig(OssSavePlaceEnum.PUBLIC, IMG_SUFFIX, DEFAULT_MAX_SIZE) );
         ALL_BIZ_TYPE_MAP.put(BIZ_TYPE.CERT, new OssFileConfig(OssSavePlaceEnum.PRIVATE, new HashSet<>(Arrays.asList(ALL_SUFFIX_FLAG)), DEFAULT_MAX_SIZE) );
-        ALL_BIZ_TYPE_MAP.put(ProductTypeEnum.JD_E_CARD.getCode(), new OssFileConfig(OssSavePlaceEnum.PRIVATE, new HashSet<>(Arrays.asList("xls,xlsx")), DEFAULT_MAX_SIZE) );
-        ALL_BIZ_TYPE_MAP.put(ProductTypeEnum.CTRIP.getCode(), new OssFileConfig(OssSavePlaceEnum.PRIVATE, new HashSet<>(Arrays.asList("xls,xlsx")), DEFAULT_MAX_SIZE) );
-        ALL_BIZ_TYPE_MAP.put(BizTypeEnum.PROPERTY_CREDIT.getCode(), new OssFileConfig(OssSavePlaceEnum.PRIVATE, new HashSet<>(Arrays.asList("xls,xlsx")), DEFAULT_MAX_SIZE) );
+        ALL_BIZ_TYPE_MAP.put(ProductTypeEnum.JD_E_CARD.getCode(), new OssFileConfig(OssSavePlaceEnum.PRIVATE, new HashSet<>(EXCEL_SUFFIX), DEFAULT_MAX_SIZE) );
+        ALL_BIZ_TYPE_MAP.put(ProductTypeEnum.CTRIP.getCode(), new OssFileConfig(OssSavePlaceEnum.PRIVATE, new HashSet<>(EXCEL_SUFFIX), DEFAULT_MAX_SIZE) );
+        ALL_BIZ_TYPE_MAP.put(BizTypeEnum.PROPERTY_CREDIT.getCode(), new OssFileConfig(OssSavePlaceEnum.PRIVATE, new HashSet<>(EXCEL_SUFFIX), DEFAULT_MAX_SIZE) );
     }
 
     /** 存储位置 **/

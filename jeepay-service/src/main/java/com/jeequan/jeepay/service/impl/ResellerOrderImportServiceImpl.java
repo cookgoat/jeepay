@@ -14,12 +14,12 @@ import com.jeequan.jeepay.service.rq.ResellerOrderImportRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 import static com.jeequan.jeepay.core.constants.ProductTypeEnum.isRightProductType;
-import static com.jeequan.jeepay.core.utils.ExcelUtil.isExcelFile;
 import static com.jeequan.jeepay.core.utils.RegexUtil.isInteger;
 import static com.jeequan.jeepay.core.utils.RegexUtil.isMobile;
 
@@ -51,6 +51,7 @@ public class ResellerOrderImportServiceImpl implements ResellerOrderImportServic
             }
         } catch (Exception e) {
             e.printStackTrace();
+            throw new BizException(e.getMessage());
         }
     }
 
@@ -107,12 +108,11 @@ public class ResellerOrderImportServiceImpl implements ResellerOrderImportServic
 
 
 
-    private void checkParam(ResellerOrderImportRequest resellerOrderImportRequest) throws IOException {
+    private void checkParam(ResellerOrderImportRequest resellerOrderImportRequest) {
         if (resellerOrderImportRequest == null ||
                 StringUtils.isBlank(resellerOrderImportRequest.getProductType()) ||
                 resellerOrderImportRequest.getCurrentUserId() == 0 ||
                 resellerOrderImportRequest.getMultipartFile() == null ||
-                !isExcelFile(resellerOrderImportRequest.getMultipartFile().getInputStream()) ||
                 !isRightProductType(resellerOrderImportRequest.getProductType())) {
             throw new BizException(ApiCodeEnum.PARAMS_ERROR);
         }

@@ -9,13 +9,14 @@ import java.util.regex.Pattern;
  */
 public class RegexUtil {
 
-    private static Pattern p1 = Pattern.compile("^[0][1-9]{2,3}-[0-9]{5,10}$"); // 验证带区号的
+    private static final Pattern p1 = Pattern.compile("^[0][1-9]{2,3}-[0-9]{5,10}$"); // 验证带区号的
 
-    private static Pattern p2 = Pattern.compile("^[1-9]{1}[0-9]{5,8}$"); // 验证没有区号的
+    private static final Pattern p2 = Pattern.compile("^[1-9]{1}[0-9]{5,8}$"); // 验证没有区号的
 
-    private static Pattern p = Pattern.compile("^[1][3,4,5,8][0-9]{9}$"); // 验证手机号
+    private static final Pattern p = Pattern.compile("^[1][3,4,5,8][0-9]{9}$"); // 验证手机号
 
-    private static Pattern mobileP = Pattern.compile("^[-+]?[d]*$");
+   private static final  Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+
 
     /**
      * 手机号验证
@@ -25,9 +26,8 @@ public class RegexUtil {
      */
 
     public static boolean isMobile(String str) {
-        Pattern p = null;
-        Matcher m = null;
-        boolean b = false;
+        Matcher m ;
+        boolean b ;
         m = p.matcher(str);
         b = m.matches();
         return b;
@@ -57,7 +57,6 @@ public class RegexUtil {
 
 
     public static boolean isInteger(String str) {
-        return mobileP.matcher(str).matches();
+        return pattern.matcher(str).matches();
     }
-
 }

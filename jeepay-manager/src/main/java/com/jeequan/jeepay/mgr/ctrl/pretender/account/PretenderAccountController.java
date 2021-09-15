@@ -41,6 +41,7 @@ public class PretenderAccountController extends CommonCtrl {
 
     /** 导入 */
     @PostMapping("/{bizType}/")
+    @PreAuthorize("hasAnyAuthority('ENT_PRETENDER_ACCOUNT_GROUP_IMPORT')")
     public ApiRes batchUpload(@RequestParam("file") MultipartFile file, @PathVariable("bizType") String bizType) {
 
         if( file == null ) {
@@ -78,7 +79,7 @@ public class PretenderAccountController extends CommonCtrl {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('ENT_PC_WAY_LIST', 'ENT_PAY_ORDER_SEARCH_PAY_WAY')")
+    @PreAuthorize("hasAnyAuthority('ENT_PRETENDER_ACCOUNT_GROUP_LIST')")
     @GetMapping
     public ApiRes list() {
 
@@ -94,7 +95,7 @@ public class PretenderAccountController extends CommonCtrl {
         if(StringUtils.isNotBlank(pretenderAccount.getCertificate())){
             condition.like(PretenderAccount::getCertificate, pretenderAccount.getCertificate());
         }
-        if(pretenderAccount.getId()==null){
+        if(pretenderAccount.getId()!=null){
             condition.eq(PretenderAccount::getId, pretenderAccount.getId());
         }
 
@@ -112,7 +113,7 @@ public class PretenderAccountController extends CommonCtrl {
         return ApiRes.page(pages);
     }
 
-    @PreAuthorize("hasAuthority('ENT_PAY_ORDER_VIEW')")
+    @PreAuthorize("hasAuthority('ENT_PRETENDER_ACCOUNT_GROUP_VIEW')")
     @RequestMapping(value="/{pretenderAccountId}", method = RequestMethod.GET)
     public ApiRes detail(@PathVariable("pretenderAccountId") Long pretenderAccountId) {
         PretenderAccount pretenderAccount =  pretenderAccountService.getById(pretenderAccountId);
@@ -122,7 +123,7 @@ public class PretenderAccountController extends CommonCtrl {
         return ApiRes.ok(pretenderAccount);
     }
 
-    @PreAuthorize("hasAuthority('ENT_PC_WAY_EDIT')")
+    @PreAuthorize("hasAuthority('ENT_PRETENDER_ACCOUNT_GROUP_EDIT')")
     @PutMapping("/{pretenderAccountId}")
     @MethodLog(remark = "更新伪装账号")
     public ApiRes update(@PathVariable("pretenderAccountId") Long pretenderAccountId) {
@@ -135,7 +136,7 @@ public class PretenderAccountController extends CommonCtrl {
         return ApiRes.ok();
     }
 
-    @PreAuthorize("hasAuthority('ENT_PC_WAY_DEL')")
+    @PreAuthorize("hasAuthority('ENT_PRETENDER_ACCOUNT_GROUP_DELETE')")
     @DeleteMapping("/{pretenderAccountId}")
     @MethodLog(remark = "删除支付方式")
     public ApiRes delete(@PathVariable("pretenderAccountId") Long pretenderAccountId) {
@@ -144,7 +145,7 @@ public class PretenderAccountController extends CommonCtrl {
         if (count>0) {
             throw new BizException("该小号存在使用记录");
         }
-        boolean result = pretenderOrderService.removeById(pretenderAccountId);
+        boolean result = pretenderAccountService.removeById(pretenderAccountId);
         if (!result) {
             return ApiRes.fail(ApiCodeEnum.SYS_OPERATION_FAIL_DELETE);
         }
