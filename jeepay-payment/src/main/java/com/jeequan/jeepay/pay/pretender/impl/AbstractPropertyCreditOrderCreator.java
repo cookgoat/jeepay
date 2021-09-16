@@ -1,5 +1,6 @@
 package com.jeequan.jeepay.pay.pretender.impl;
 
+import com.jeequan.jeepay.core.constants.BizTypeEnum;
 import com.jeequan.jeepay.core.entity.PretenderAccount;
 import com.jeequan.jeepay.core.entity.PretenderOrder;
 import com.jeequan.jeepay.core.entity.ResellerOrder;
@@ -7,7 +8,6 @@ import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.utils.AmountUtil;
 import com.jeequan.jeepay.pay.pretender.AbstractPretenderCreator;
 import com.jeequan.jeepay.pay.pretender.PretenderOrderCreator;
-import com.jeequan.jeepay.core.constants.BizTypeEnum;
 import com.jeequan.jeepay.pay.pretender.cs.PretenderOrderStatusEnum;
 import com.jeequan.jeepay.pay.pretender.model.FacePrice;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.AlipayHelper;
@@ -16,9 +16,9 @@ import com.jeequan.jeepay.pay.pretender.propertycredit.kits.PropertyCreditUtil;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.StringFinder;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.BasePayRequest;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.CreateOrderRequest;
-import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.CreateOrderResult;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rq.GetRechargeAccountLogRequest;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.BaseResult;
+import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.CreateOrderResult;
 import com.jeequan.jeepay.pay.pretender.propertycredit.kits.rs.ToWechatPayResult;
 import com.jeequan.jeepay.pay.pretender.rq.BaseRq;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +53,7 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
 
     @Override
     protected PretenderOrder doCreateOrder(ResellerOrder resellerOrder, PretenderAccount pretenderAccount, FacePrice facePrice) {
-        doCommonSimulateAction(pretenderAccount, facePrice);
+        taskExec.submit(() -> doCommonSimulateAction(pretenderAccount, facePrice));
         return doCreatePretenderOrder(resellerOrder, pretenderAccount, facePrice);
     }
 
@@ -81,7 +81,7 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
             throw new BizException(PRETENDER_ACCOUNT_IS_NOT_LOGIN);
         }
         BasePayRequest basePayRequest = buildBasePayRequest(createOrderRequest, createOrderResult);
-        PropertyCreditUtil.goPay(basePayRequest);
+        taskExec.submit(() -> PropertyCreditUtil.goPay(basePayRequest));
         String payUrl;
         if (StringUtils.equalsIgnoreCase(getPayWay(), com.jeequan.jeepay.core.constants.CS.PAY_WAY_CODE.ALI_WAP)) {
             payUrl = getAlipayUrl(basePayRequest);
@@ -102,7 +102,7 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
         Long discount = AmountUtil.calPercentageFee(resellerOrder.getAmount(),
                 BigDecimal.valueOf(facePrice.getDiscount()));
         Long amount = resellerOrder.getAmount() + discount;
-        String amountDollar = AmountUtil.convertCent2Dollar(amount,0);
+        String amountDollar = AmountUtil.convertCent2Dollar(amount, 0);
         createOrderRequest.setRechargeAmount(amountDollar);
         return createOrderRequest;
     }

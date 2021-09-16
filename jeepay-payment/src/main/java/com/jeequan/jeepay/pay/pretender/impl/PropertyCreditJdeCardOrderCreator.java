@@ -15,9 +15,11 @@ import java.util.List;
 abstract
 public class PropertyCreditJdeCardOrderCreator extends AbstractPropertyCreditOrderCreator{
 
+    private static final List<FacePrice> jdECardFacePriceList = FacePriceConvert.batchConvertToFacePrice(GoodsWrapper.getCtrpGnetGoodsType());
+
     @Override
     protected List<FacePrice> getAvailableFacePrice() {
-       return FacePriceConvert.batchConvertToFacePrice(GoodsWrapper.getJdECardGoodsType());
+       return jdECardFacePriceList;
     }
 
     @Override

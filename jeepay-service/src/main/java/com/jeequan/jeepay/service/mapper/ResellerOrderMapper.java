@@ -2,6 +2,9 @@ package com.jeequan.jeepay.service.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.jeequan.jeepay.core.entity.ResellerOrder;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Map;
 
 /**
  * <p>
@@ -12,5 +15,8 @@ import com.jeequan.jeepay.core.entity.ResellerOrder;
  * @since 2021-09-12
  */
 public interface ResellerOrderMapper extends BaseMapper<ResellerOrder> {
+
+    ResellerOrder randomByAmountAndProductType  (Map<String,Object> paramMap);
+
 
 }

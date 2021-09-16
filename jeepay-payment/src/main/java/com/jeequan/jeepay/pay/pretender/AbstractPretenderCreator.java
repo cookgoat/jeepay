@@ -1,12 +1,12 @@
 package com.jeequan.jeepay.pay.pretender;
 
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.jeequan.jeepay.core.constants.ProductTypeEnum;
+import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.core.entity.PretenderAccount;
 import com.jeequan.jeepay.core.entity.PretenderOrder;
 import com.jeequan.jeepay.core.entity.ResellerOrder;
 import com.jeequan.jeepay.core.exception.BizException;
-import com.jeequan.jeepay.core.constants.ProductTypeEnum;
-import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.pay.pretender.model.FacePrice;
 import com.jeequan.jeepay.pay.pretender.rq.BaseRq;
 import com.jeequan.jeepay.service.impl.PretenderAccountService;
@@ -17,9 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.*;
 
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.*;
 
@@ -38,6 +38,13 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
 
     @Autowired protected PretenderOrderService pretenderOrderService;
 
+    /**
+     * 异步处理线程池
+     */
+    private ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("pretender-order-creator-thread-call-runner-%d").build();
+
+    protected ExecutorService taskExec = new ThreadPoolExecutor(10,20,200L, TimeUnit.MILLISECONDS,new LinkedBlockingDeque<Runnable>(),namedThreadFactory);
+
 
     @Override
     public PretenderOrder createOrder(BaseRq baseRq) {
@@ -54,7 +61,6 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
         PretenderOrder pretenderOrder = doCreateOrder(resellerOrder,pretenderAccount,facePrice);
         //update the reseller order status to "PAYING"
         savePretenderOrder(pretenderOrder);
-        updateResellerOrderToPaying(resellerOrder,pretenderOrder);
         logger.info("end [AbstractPretenderCreator.createOrder], success bizType={},productType={},baseRq={},pretenderOrder={}", bizType,
                 productType, baseRq,pretenderOrder);
         return pretenderOrder;
@@ -116,19 +122,21 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
      */
     private FacePrice matchTheAvailablePrice(BaseRq baseRq) {
         List<FacePrice> facePriceList = getAvailableFacePrice();
+        Optional<FacePrice> matchedFacePriceOpt = facePriceList.stream().filter(facePrice -> facePrice.getFacePrice().equals(baseRq.getChargeAmount())).findAny();
+        if(matchedFacePriceOpt.isPresent()){
+            return matchedFacePriceOpt.get();
+        }
         Optional<FacePrice> customFacePriceOpt = facePriceList.stream().
                 filter(FacePrice::isCustom).findAny();
         if (customFacePriceOpt.isPresent()) {
             if (baseRq.getChargeAmount() > customFacePriceOpt.get().getLimitPrice()) {
                 throw new BizException(ORDER_CHARGE_AMOUNT_ILLEGAL);
             }
-            return customFacePriceOpt.get();
         }
-        Optional<FacePrice> matchedFacePriceOpt = facePriceList.stream().filter(facePrice -> facePrice.getFacePrice().equals(baseRq.getChargeAmount())).findAny();
-        if (!matchedFacePriceOpt.isPresent()) {
+        if (!customFacePriceOpt.isPresent()) {
             throw new BizException(ORDER_CHARGE_AMOUNT_ILLEGAL);
         }
-        return matchedFacePriceOpt.get();
+        return customFacePriceOpt.get();
     }
 
     /**
@@ -165,18 +173,6 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
         boolean isSaveSuccess = pretenderOrderService.save(pretenderOrder);
         if (!isSaveSuccess) {
             logger.error("[AbstractPropertyCreditOrderCreator.savePretenderOrder] failed ,save pretender order failed,pretenderAccount={}", pretenderOrder.getPretenderAccountId());
-            throw new BizException(SYS_OPERATION_FAIL_CREATE);
-        }
-    }
-
-    public void updateResellerOrderToPaying(ResellerOrder resellerOrder,PretenderOrder pretenderOrder){
-        boolean isSuccess = resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>()
-                .set(ResellerOrder::getGmtPayingStart, new Date())
-                .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.PAYING.getCode())
-                .set(ResellerOrder::getGmtUpdate, new Date())
-                .eq(ResellerOrder::getId, resellerOrder.getId()));
-        if (!isSuccess) {
-            logger.error("[AbstractPropertyCreditOrderCreator.doCreateOrder] failed update resellerOrder failed ,save pretender order failed,pretenderOrder={}", pretenderOrder);
             throw new BizException(SYS_OPERATION_FAIL_CREATE);
         }
     }

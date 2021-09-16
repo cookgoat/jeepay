@@ -51,7 +51,7 @@ spring:
     timeout: 1000
     password:
 
-# #activeMQ配置 ( 注意： activeMQ配置项需在spring的下级 )
+  # #activeMQ配置 ( 注意： activeMQ配置项需在spring的下级 )
   activemq:
     broker-url: failover:(tcp://127.0.0.1:61616?wireFormat.maxInactivityDuration=0)  #连接地址
     in-memory: false # Jeepay项目不可使用内存模式， 需要连接多个消费者。
@@ -61,20 +61,20 @@ spring:
       enabled: true
       max-connections: 10
       idle-timeout: 30000  # 空闲的连接过期时间，默认为30秒
-#
-#  #rabbitmq配置  ( 注意： rabbitmq配置项需在spring的下级 )
-#  rabbitmq:
-#    addresses: 127.0.0.1:5672
-#    username: guest
-#    password: guest
-#    dynamic: true
-#    virtual-host: /
+  #
+  #  #rabbitmq配置  ( 注意： rabbitmq配置项需在spring的下级 )
+  #  rabbitmq:
+  #    addresses: 127.0.0.1:5672
+  #    username: guest
+  #    password: guest
+  #    dynamic: true
+  #    virtual-host: /
 
-## rocketmq配置 ( 注意：rocketmq配置项请放置到根目录， 不是spring的二级配置！  )
-#rocketmq:
-#  name-server: 127.0.0.1:9876
-#  producer:
-#    group: JEEPAY-GROUP
+  ## rocketmq配置 ( 注意：rocketmq配置项请放置到根目录， 不是spring的二级配置！  )
+  #rocketmq:
+  #  name-server: 127.0.0.1:9876
+  #  producer:
+  #    group: JEEPAY-GROUP
 
   #日志配置参数。
   # 当存在logback-spring.xml文件时： 该配置将引进到logback配置，  springboot配置不生效。

@@ -13,10 +13,11 @@ import java.util.List;
  */
 public abstract class PropertyCreditCtripCreator extends AbstractPropertyCreditOrderCreator{
 
+    private static final List<FacePrice> ctrpFacePriceList = FacePriceConvert.batchConvertToFacePrice(GoodsWrapper.getCtrpGnetGoodsType());
 
     @Override
     protected List<FacePrice> getAvailableFacePrice() {
-        return FacePriceConvert.batchConvertToFacePrice(GoodsWrapper.getCtrpGnetGoodsType());
+        return ctrpFacePriceList;
     }
 
     @Override
