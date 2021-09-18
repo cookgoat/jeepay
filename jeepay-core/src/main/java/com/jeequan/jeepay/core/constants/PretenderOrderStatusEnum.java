@@ -1,4 +1,4 @@
-package com.jeequan.jeepay.pay.pretender.cs;
+package com.jeequan.jeepay.core.constants;
 
 /**
  * @author axl rose
