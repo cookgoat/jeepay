@@ -98,7 +98,7 @@ logging:
 #系统业务参数
 isys:
 
-  jwt-secret: t7w3P8X6472qWc3u #生成jwt的秘钥。 要求每个系统有单独的秘钥管理机制。
+  jwt-secret: t7w3P8X6472qWcx3ua231 #生成jwt的秘钥。 要求每个系统有单独的秘钥管理机制。
 
   #是否允许跨域请求 [生产环境建议关闭， 若api与前端项目没有在同一个域名下时，应开启此配置或在nginx统一配置允许跨域]
   allow-cors: true

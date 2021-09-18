@@ -74,7 +74,7 @@ public class CS {
     public static final byte SEX_FEMALE = 2;
 
     /** 默认密码 */
-    public static final String DEFAULT_PWD = "jeepay666";
+    public static final String DEFAULT_PWD = "asdf1234tt!";
 
 
     /**

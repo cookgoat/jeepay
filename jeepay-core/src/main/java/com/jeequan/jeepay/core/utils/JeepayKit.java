@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class JeepayKit {
 
-    public static byte[] AES_KEY = "4ChT08phkz59hquD795X7w==".getBytes();
+    public static byte[] AES_KEY = "0xkG39paxlrosehkz59xqgD29xP8W!(".getBytes();
 
     /** 加密 **/
     public static String aesEncode(String str){
