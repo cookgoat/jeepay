@@ -9,20 +9,20 @@ import java.util.List;
 
 /**
  * @author axl rose
- *
  */
-public abstract class PropertyCreditCtripCreator extends AbstractPropertyCreditOrderCreator{
+public abstract class PropertyCreditCtripCreator extends AbstractPropertyCreditOrderCreator {
 
-    private static final List<FacePrice> ctrpFacePriceList = FacePriceConvert.batchConvertToFacePrice(GoodsWrapper.getCtrpGnetGoodsType());
+  private static final List<FacePrice> ctrpFacePriceList = FacePriceConvert.batchConvertToFacePrice(
+      GoodsWrapper.getCtrpGnetGoodsType());
 
-    @Override
-    protected List<FacePrice> getAvailableFacePrice() {
-        return ctrpFacePriceList;
-    }
+  @Override
+  protected List<FacePrice> getAvailableFacePrice() {
+    return ctrpFacePriceList;
+  }
 
-    @Override
-    protected ProductTypeEnum getProductTypeEnum() {
-        return ProductTypeEnum.CTRIP;
-    }
+  @Override
+  protected ProductTypeEnum getProductTypeEnum() {
+    return ProductTypeEnum.CTRIP;
+  }
 
 }
