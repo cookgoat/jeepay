@@ -50,6 +50,21 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.sun</groupId>
+      <artifactId>jconsole</artifactId>
+      <scope>system</scope>
+      <systemPath>${java.home}/../lib/jconsole.jar</systemPath>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.sun</groupId>
+      <artifactId>tools</artifactId>
+      <scope>system</scope>
+      <systemPath>${java.home}/../lib/tools.jar</systemPath>
+      <optional>true</optional>
+    </dependency>
+
   </dependencies>
 
   <build>
