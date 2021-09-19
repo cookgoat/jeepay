@@ -3,6 +3,7 @@ package com.jeequan.jeepay.service.impl;
 import com.jeequan.jeepay.core.constants.ApiCodeEnum;
 import com.jeequan.jeepay.core.constants.PretenderAccountStatusEnum;
 import com.jeequan.jeepay.core.entity.PretenderAccount;
+import com.jeequan.jeepay.core.entity.ResellerOrder;
 import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.utils.ExcelUtil;
 import com.jeequan.jeepay.service.PretenderAccountImportService;
@@ -80,10 +81,19 @@ public class PretenderAccountImportServiceImpl implements PretenderAccountImport
         if(StringUtils.isBlank(pretenderAccountExcelFileEntity.getCertificate())){
             return null;
         }
+        if(StringUtils.isNotBlank(pretenderAccountExcelFileEntity.getCertificate())){
+            int count =pretenderAccountService.count(
+                PretenderAccount.gw().eq(PretenderAccount::getCertificate,pretenderAccountExcelFileEntity.getCertificate()));
+            if(count>0){
+                return null;
+            }
+        }
         PretenderAccount  pretenderAccount = new PretenderAccount();
         pretenderAccount.setAccount(pretenderAccountExcelFileEntity.getAccount());
-        pretenderAccount.setCertificate(pretenderAccountExcelFileEntity.getCertificate());
         pretenderAccount.setBizType(pretenderAccountImportRequest.getBizType());
+        pretenderAccount.setCertificate(pretenderAccountExcelFileEntity.getCertificate());
+
+
         Date now = new Date();
         pretenderAccount.setGmtCreate(now);
         pretenderAccount.setStatus(PretenderAccountStatusEnum.AVAILABLE.getCode());

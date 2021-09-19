@@ -91,7 +91,7 @@ public class PretendpayPaymentService extends AbstractPaymentService {
                 .set(ResellerOrder::getGmtPayingStart, new Date())
                 .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.PAYING.getCode())
                 .set(ResellerOrder::getGmtUpdate, new Date())
-                .set(ResellerOrder::getMatchOutTradeNo, payOrder.getMchOrderNo())
+                .set(ResellerOrder::getMatchOutTradeNo, payOrder.getPayOrderId())
                 .eq(ResellerOrder::getOrderNo, pretenderOrder.getMatchResellerOrderNo()));
         if (!isSuccess) {
             logger.error("[AbstractPropertyCreditOrderCreator.updateResellerOrderToPaying] failed update resellerOrder failed ,save pretender order failed,pretenderOrder={}", pretenderOrder);

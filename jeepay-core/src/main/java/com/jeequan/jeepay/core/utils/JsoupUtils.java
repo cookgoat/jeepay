@@ -1,10 +1,16 @@
 package com.jeequan.jeepay.core.utils;
 
 import java.util.Map;
+import java.net.Proxy;
 import org.jsoup.Jsoup;
 import java.io.IOException;
 import org.jsoup.Connection;
+import java.net.Authenticator;
 import org.jsoup.nodes.Document;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
+import java.net.PasswordAuthentication;
+import org.apache.commons.lang3.StringUtils;
 import static com.jeequan.jeepay.core.constants.CS.HEADERS.ACCEPT_XHTML_XML;
 import static com.jeequan.jeepay.core.constants.CS.HEADERS.FORM_URL_ENCODE;
 
@@ -14,23 +20,49 @@ import static com.jeequan.jeepay.core.constants.CS.HEADERS.FORM_URL_ENCODE;
  */
 public class JsoupUtils {
 
-    public static String httpGet(String url, String cookie) throws IOException {
+    public  String httpGet(String url, String cookie, Proxy proxy,String userName,String password) throws IOException {
+        //是否需要身份认证
+        if(proxy!=null&&StringUtils.isNotBlank(userName)){
+            Authenticator.setDefault(new Authenticator() {
+                @Override
+                public PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(userName, password.toCharArray());
+                }
+            });
+        }
         //获取请求连接
         Connection con = Jsoup.connect(url);
+        if(proxy!=null){
+            con.proxy(proxy);
+        }
         //请求头设置，特别是cookie设置
         con.header("Accept", ACCEPT_XHTML_XML);
         con.header("User-Agent", UserAgentUtil.randomUserAgent());
         con.header("Cookie", cookie);
+        con.method(Method.GET);
         //解析请求结果
-        Document doc = con.get();
+        Response response = con.execute();
+        Document doc = response.parse();
         //获取标题
         System.out.println(doc.title());
-        return doc.toString();
+        return doc.body().wholeText();
     }
 
-    public static String httpGet(String url, Map<String,String> headersMap) throws IOException {
+    public  String httpGet(String url, Map<String,String> headersMap,Proxy proxy,String userName,String password) throws IOException {
+        //是否需要身份认证
+        if(proxy!=null&&StringUtils.isNotBlank(userName)){
+            Authenticator.setDefault(new Authenticator() {
+                @Override
+                public PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(userName, password.toCharArray());
+                }
+            });
+        }
         //获取请求连接
         Connection con = Jsoup.connect(url);
+        if(proxy!=null){
+            con.proxy(proxy);
+        }
         //请求头设置，特别是cookie设置
         con.headers(headersMap);
         //解析请求结果
@@ -40,7 +72,7 @@ public class JsoupUtils {
         return doc.toString();
     }
 
-    public static String httpPost(String url, Map<String, String> map, String cookie) throws IOException {
+    public  String httpPost(String url, Map<String, String> map, String cookie) throws IOException {
         //获取请求连接
         Connection con = Jsoup.connect(url);
         //遍历生成参数
@@ -57,7 +89,7 @@ public class JsoupUtils {
         return doc.toString();
     }
 
-    public static String httpReturnRespHeader(String url, String cook, String header, boolean isPost) throws IOException {
+    public  String httpReturnRespHeader(String url, String cook, String header, boolean isPost) throws IOException {
         //获取请求连接
         Connection con = Jsoup.connect(url);
         //请求头设置，特别是cookie设置
@@ -87,6 +119,5 @@ public class JsoupUtils {
         System.out.println("所有头文件值：" + headersOne);
         return headerValue;
     }
-
 
 }

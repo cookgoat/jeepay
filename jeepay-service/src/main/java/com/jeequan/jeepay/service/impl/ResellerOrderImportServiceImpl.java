@@ -79,6 +79,10 @@ public class ResellerOrderImportServiceImpl implements ResellerOrderImportServic
         if (StringUtils.isBlank(resellerOrderBaseExcelFileEntity.getOrderNo())) {
             resellerOrder.setOrderNo(generateOrderNo());
         } else {
+            int count =resellerOrderService.count(ResellerOrder.gw().eq(ResellerOrder::getOrderNo,resellerOrderBaseExcelFileEntity.getOrderNo()));
+            if(count>0){
+                return null;
+            }
             resellerOrder.setOrderNo(resellerOrderBaseExcelFileEntity.getOrderNo());
         }
         if (StringUtils.isBlank(resellerOrderBaseExcelFileEntity.getAmount()) || !isInteger(resellerOrderBaseExcelFileEntity.getAmount())) {

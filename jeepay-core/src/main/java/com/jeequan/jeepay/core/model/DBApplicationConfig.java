@@ -51,6 +51,15 @@ public class DBApplicationConfig implements Serializable {
      */
     private String matchOrderUrl;
 
+
+    /**
+     *
+     * Ip代理私密地址
+     *
+     */
+    private String proxyIpUrl;
+
+
     /** 生成  【jsapi统一收银台跳转地址】 **/
     public String genUniJsapiPayUrl(String payOrderId){
         return getPaySiteUrl() + "/cashier/index.html#/hub/" + JeepayKit.aesEncode(payOrderId);

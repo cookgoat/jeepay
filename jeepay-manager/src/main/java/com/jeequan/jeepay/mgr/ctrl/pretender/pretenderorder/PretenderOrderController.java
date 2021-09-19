@@ -52,15 +52,15 @@ public class PretenderOrderController extends CommonCtrl {
       condition.eq(PretenderOrder::getId, pretenderOrder.getId());
     }
 
-    if (StringUtils.isBlank(pretenderOrder.getOutTradeNo())) {
+    if (StringUtils.isNotBlank(pretenderOrder.getOutTradeNo())) {
       condition.eq(PretenderOrder::getOutTradeNo, pretenderOrder.getOutTradeNo());
     }
 
-    if (StringUtils.isBlank(pretenderOrder.getStatus())) {
+    if (StringUtils.isNotBlank(pretenderOrder.getStatus())) {
       condition.eq(PretenderOrder::getStatus, pretenderOrder.getStatus());
     }
 
-    if (StringUtils.isBlank(pretenderOrder.getPayWay())) {
+    if (StringUtils.isNotBlank(pretenderOrder.getPayWay())) {
       condition.eq(PretenderOrder::getPayWay, pretenderOrder.getPayWay());
     }
 

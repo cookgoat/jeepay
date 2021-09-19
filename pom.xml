@@ -52,7 +52,7 @@
         <binarywang.weixin.java.version>4.1.0</binarywang.weixin.java.version>
         <rocketmq.spring.boot.starter.version>2.2.0</rocketmq.spring.boot.starter.version>
         <okhttps.version>3.1.4</okhttps.version>
-        <jsoup.version>1.12.1</jsoup.version>
+        <jsoup.version>1.14.2</jsoup.version>
     </properties>
 
 

@@ -3,7 +3,6 @@ package com.jeequan.jeepay.pay.pretender.impl;
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.GET_ALIPAY_FAILED;
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.PRETENDER_ACCOUNT_IS_NOT_LOGIN;
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.TO_ALIPAY_FAILED;
-
 import com.jeequan.jeepay.core.constants.BizTypeEnum;
 import com.jeequan.jeepay.core.entity.PretenderAccount;
 import com.jeequan.jeepay.core.entity.PretenderOrder;
@@ -55,29 +54,33 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
   @Override
   protected PretenderOrder doCreateOrder(ResellerOrder resellerOrder,
       PretenderAccount pretenderAccount, FacePrice facePrice) {
-    taskExec.submit(() -> doCommonSimulateAction(pretenderAccount, facePrice));
-    return doCreatePretenderOrder(resellerOrder, pretenderAccount, facePrice);
+    PropertyCreditUtil propertyCreditUtil = new PropertyCreditUtil(getProxy());
+    taskExec.submit(() -> doCommonSimulateAction(pretenderAccount, facePrice, propertyCreditUtil));
+    return doCreatePretenderOrder(resellerOrder, pretenderAccount, facePrice, propertyCreditUtil);
   }
 
-  private void doCommonSimulateAction(PretenderAccount pretenderAccount, FacePrice facePrice) {
+
+  private void doCommonSimulateAction(PretenderAccount pretenderAccount, FacePrice facePrice,
+      PropertyCreditUtil propertyCreditUtil) {
     //request recharge page,just for simulate
-    PropertyCreditUtil.requestRechargePage();
+    propertyCreditUtil.requestRechargePage();
     //check the pretender account whether login
-    checkPretenderAccountWhetherLogin(pretenderAccount);
+    checkPretenderAccountWhetherLogin(pretenderAccount, propertyCreditUtil);
     //get the recharge account log,just for simulate
     GetRechargeAccountLogRequest getRechargeAccountLogRequest = new GetRechargeAccountLogRequest();
     getRechargeAccountLogRequest.setCookie(pretenderAccount.getCertificate());
     getRechargeAccountLogRequest.setRechargeProduct(facePrice.getProductCode());
-    PropertyCreditUtil.getRechargeAccountLog(getRechargeAccountLogRequest);
+    propertyCreditUtil.getRechargeAccountLog(getRechargeAccountLogRequest);
   }
 
 
   private PretenderOrder doCreatePretenderOrder(ResellerOrder resellerOrder,
-      PretenderAccount pretenderAccount, FacePrice facePrice) {
+      PretenderAccount pretenderAccount, FacePrice facePrice,
+      PropertyCreditUtil propertyCreditUtil) {
     //create order request
     CreateOrderRequest createOrderRequest = buildCreateOrderRequest(resellerOrder, pretenderAccount,
         facePrice);
-    CreateOrderResult createOrderResult = PropertyCreditUtil.createOrder(createOrderRequest);
+    CreateOrderResult createOrderResult = propertyCreditUtil.createOrder(createOrderRequest);
     if (!createOrderResult.isSuccess()) {
       logger.error(
           "[AbstractPropertyCreditOrderCreator.doCreatePretenderOrder] failed,pretenderAccount={},createOrderRequest={},createOrderResult={}",
@@ -86,13 +89,13 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
       throw new BizException(PRETENDER_ACCOUNT_IS_NOT_LOGIN);
     }
     BasePayRequest basePayRequest = buildBasePayRequest(createOrderRequest, createOrderResult);
-    taskExec.submit(() -> PropertyCreditUtil.goPay(basePayRequest));
+    taskExec.submit(() -> propertyCreditUtil.goPay(basePayRequest));
     String payUrl;
     if (StringUtils.equalsIgnoreCase(getPayWay(),
         com.jeequan.jeepay.core.constants.CS.PAY_WAY_CODE.ALI_WAP)) {
-      payUrl = getAlipayUrl(basePayRequest);
+      payUrl = getAlipayUrl(basePayRequest, propertyCreditUtil);
     } else {
-      payUrl = getWechatUrl(basePayRequest);
+      payUrl = getWechatUrl(basePayRequest, propertyCreditUtil);
     }
     return buildPretenderOrder(resellerOrder, pretenderAccount, createOrderResult, payUrl);
   }
@@ -131,8 +134,9 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
   }
 
 
-  private void checkPretenderAccountWhetherLogin(PretenderAccount pretenderAccount) {
-    BaseResult baseResult = PropertyCreditUtil.isLogin(pretenderAccount.getCertificate());
+  private void checkPretenderAccountWhetherLogin(PretenderAccount pretenderAccount,
+      PropertyCreditUtil propertyCreditUtil) {
+    BaseResult baseResult = propertyCreditUtil.isLogin(pretenderAccount.getCertificate());
     if (!baseResult.isSuccess()) {
       logger.error(
           "[AbstractPropertyCreditOrderCreator.checkPretenderAccountWhetherLogin] is not login,pretenderAccount={}",
@@ -141,8 +145,9 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
     }
   }
 
-  private String getAlipayUrl(BasePayRequest basePayRequest) {
-    String alipayJsonData = PropertyCreditUtil.toAlipay(basePayRequest);
+  private String getAlipayUrl(BasePayRequest basePayRequest,
+      PropertyCreditUtil propertyCreditUtil) {
+    String alipayJsonData = propertyCreditUtil.toAlipay(basePayRequest);
     if (StringUtils.isBlank(alipayJsonData)) {
       logger.error(
           "[AbstractPropertyCreditOrderCreator.getAlipayUrl] to alipay failed,basePayRequest={},alipayJsonData={}",
@@ -150,7 +155,7 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
       throw new BizException(TO_ALIPAY_FAILED);
     }
     Map<String, String> alipayParams = AlipayHelper.getAlipayUrlFromAction(alipayJsonData);
-    String payUrl = PropertyCreditUtil.postAlipay(alipayParams);
+    String payUrl = propertyCreditUtil.postAlipay(alipayParams);
     if (StringUtils.isBlank(payUrl)) {
       logger.error(
           "[AbstractPropertyCreditOrderCreator.getAlipayUrl] postAlipay failed,basePayRequest={},payUrl={}",
@@ -161,15 +166,16 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
   }
 
 
-  private String getWechatUrl(BasePayRequest basePayRequest) {
-    ToWechatPayResult toWechatPayResult = PropertyCreditUtil.toWechatPay(basePayRequest);
+  private String getWechatUrl(BasePayRequest basePayRequest,
+      PropertyCreditUtil propertyCreditUtil) {
+    ToWechatPayResult toWechatPayResult = propertyCreditUtil.toWechatPay(basePayRequest);
     if (!toWechatPayResult.isSuccess()) {
       logger.error(
           "[AbstractPropertyCreditOrderCreator.getAlipayUrl] to alipay failed,basePayRequest={},toWechatPayResult={}",
           basePayRequest, toWechatPayResult);
       throw new BizException(TO_ALIPAY_FAILED);
     }
-    String pageString = PropertyCreditUtil.postWechatPay(toWechatPayResult.getData());
+    String pageString = propertyCreditUtil.postWechatPay(toWechatPayResult.getData());
     if (StringUtils.isBlank(pageString)) {
       logger.error(
           "[AbstractPropertyCreditOrderCreator.getAlipayUrl] postAlipay failed,basePayRequest={},pageString={}",

@@ -49,7 +49,7 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
 
     @Override
     public ChannelRetMsg query(PayOrder payOrder, MchAppConfigContext mchAppConfigContext) throws Exception {
-        ResellerOrder resellerOrder = resellerOrderService.getOne(ResellerOrder.gw().eq(ResellerOrder::getMatchOutTradeNo, payOrder.getMchOrderNo())
+        ResellerOrder resellerOrder = resellerOrderService.getOne(ResellerOrder.gw().eq(ResellerOrder::getMatchOutTradeNo, payOrder.getPayOrderId())
                 .eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.PAYING), true);
         PretenderOrder pretenderOrder = pretenderOrderService.getOne(PretenderOrder.gw().eq(PretenderOrder::getOutTradeNo, payOrder.getChannelOrderNo())
                 .eq(PretenderOrder::getStatus, PretenderOrderStatusEnum.PAYING), true);
@@ -57,7 +57,8 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
         queryOrderRequest.setOrderNo(pretenderOrder.getOutTradeNo());
         PretenderAccount pretenderAccount = pretenderAccountService.getOne(PretenderAccount.gw().eq(PretenderAccount::getId, pretenderOrder.getPretenderAccountId()), false);
         queryOrderRequest.setCookie(pretenderAccount.getCertificate());
-        QueryOrderResult queryOrderResult = PropertyCreditUtil.queryOrder(queryOrderRequest);
+        PropertyCreditUtil propertyCreditUtil =new PropertyCreditUtil();
+        QueryOrderResult queryOrderResult = propertyCreditUtil.queryOrder(queryOrderRequest);
         if (!queryOrderResult.isSuccess() || queryOrderResult.getData() == null) {
             throw new BizException(QUERY_PRETENDER_ORDER_FAILED);
         }
