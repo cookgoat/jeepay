@@ -122,6 +122,9 @@ public class PretenderResellerProductConfigurerImpl implements PretenderReseller
   }
 
   private void checkCredit(ResellerPretenderProduct resellerPretenderProduct){
+    if(resellerPretenderProduct.getRecoveriesAmount()==null){
+      resellerPretenderProduct.setRecoveriesAmount(0L);
+    }
     if(resellerPretenderProduct.getCreditAmount()!=null&&resellerPretenderProduct.getCreditAmount()>0){
       if(resellerPretenderProduct.getRecoveriesAmount()>resellerPretenderProduct.getCreditAmount()){
         throw new BizException(ApiCodeEnum.RESELLER_ACCOUNT_NOT_EXIST);
