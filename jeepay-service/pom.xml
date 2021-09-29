@@ -59,7 +59,6 @@
       <systemPath>${java.home}/../lib/jconsole.jar</systemPath>
       <optional>true</optional>
     </dependency>
-
     <dependency>
       <groupId>com.sun</groupId>
       <artifactId>tools</artifactId>
