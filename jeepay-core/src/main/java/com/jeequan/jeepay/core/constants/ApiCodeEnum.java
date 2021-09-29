@@ -47,6 +47,10 @@ public enum ApiCodeEnum{
     TO_ALIPAY_FAILED(6004, "跳往支付宝支付失败"),
     GET_ALIPAY_FAILED(6005, "获取支付宝支付链接失败"),
     QUERY_PRETENDER_ORDER_FAILED(6006, "查询伪装订单状态失败"),
+    /**
+     * reseller 7001-7100
+     */
+    RESELLER_ACCOUNT_NOT_EXIST(7001, "核销商资金账户不存在"),
 
     ;
 

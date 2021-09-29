@@ -31,11 +31,13 @@ public class CS {
     public interface SYS_TYPE{
         String MCH = "MCH";
         String MGR = "MGR";
+        String RESELLER = "RESELLER";
         Map<String, String> SYS_TYPE_MAP = new HashMap<>();
     }
     static {
         SYS_TYPE.SYS_TYPE_MAP.put(SYS_TYPE.MCH, "商户系统");
         SYS_TYPE.SYS_TYPE_MAP.put(SYS_TYPE.MGR, "运营平台");
+        SYS_TYPE.SYS_TYPE_MAP.put(SYS_TYPE.RESELLER, "核销平台");
     }
 
     /** yes or no **/
@@ -45,6 +47,10 @@ public class CS {
     /** 通用 可用 / 禁用 **/
     public static final int PUB_USABLE = 1;
     public static final int PUB_DISABLE = 0;
+
+    /**核销商状态 启用/禁用*/
+    public static final String ENABLE="enable";
+    public static final String DISABLE="disable";
 
     public static final Map<Integer, String> PUB_USABLE_MAP = new HashMap<>();
     static {

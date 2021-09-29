@@ -252,4 +252,9 @@ public class PayOrder extends BaseModel implements Serializable {
      */
     private Date updatedAt;
 
+    /**
+     * 核销商订单
+     */
+    private String resellerOrderNo;
+
 }

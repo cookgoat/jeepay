@@ -1,26 +1,30 @@
 package com.jeequan.jeepay.pay.pretender;
 
+import java.util.Date;
 import java.util.List;
+import org.slf4j.Logger;
 import java.util.Optional;
 import java.util.concurrent.*;
-import com.jeequan.jeepay.core.constants.ProductTypeEnum;
-import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
-import com.jeequan.jeepay.core.entity.PretenderAccount;
-import com.jeequan.jeepay.core.entity.PretenderOrder;
+import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import com.jeequan.jeepay.pay.pretender.rq.BaseRq;
 import com.jeequan.jeepay.core.entity.ResellerOrder;
+import com.jeequan.jeepay.core.entity.PretenderOrder;
 import com.jeequan.jeepay.core.exception.BizException;
+import com.jeequan.jeepay.core.entity.PretenderAccount;
 import com.jeequan.jeepay.core.model.params.ProxyParams;
 import com.jeequan.jeepay.pay.pretender.model.FacePrice;
-import com.jeequan.jeepay.pay.pretender.rq.BaseRq;
-import com.jeequan.jeepay.service.impl.PretenderAccountService;
-import com.jeequan.jeepay.service.impl.PretenderOrderService;
+import com.jeequan.jeepay.core.constants.ProductTypeEnum;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.jeequan.jeepay.service.impl.PretenderOrderService;
+import com.jeequan.jeepay.pay.pretender.proxy.ProxyIpHunter;
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.jeequan.jeepay.service.impl.PretenderAccountService;
+import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
+import com.jeequan.jeepay.core.constants.PretenderOrderStatusEnum;
+import com.jeequan.jeepay.service.biz.PretenderAccountUseStatisticsRecorder;
 
 /**
  * @author axl rose
@@ -41,7 +45,10 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
   protected PretenderOrderService pretenderOrderService;
 
   @Autowired
-  protected  ProxyIpHunter proxyIpHunter;
+  protected ProxyIpHunter proxyIpHunter;
+
+  @Autowired
+  protected PretenderAccountUseStatisticsRecorder pretenderAccountUseStatisticsRecorder;
 
   /**
    * 异步处理线程池
@@ -50,7 +57,17 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
       .setNameFormat("pretender-order-creator-thread-call-runner-%d").build();
 
   protected ExecutorService taskExec = new ThreadPoolExecutor(10, 20, 200L, TimeUnit.MILLISECONDS,
-      new LinkedBlockingDeque<Runnable>(), namedThreadFactory);
+      new LinkedBlockingDeque<>(), namedThreadFactory);
+
+  /**
+   * 异步处理线程池
+   */
+  private ThreadFactory failedNamedThreadFactory = new ThreadFactoryBuilder()
+      .setNameFormat("pretender-order-save-failed-thread-call-runner-%d").build();
+
+  protected ExecutorService failedTaskExec = new ThreadPoolExecutor(10, 20, 200L,
+      TimeUnit.MILLISECONDS,
+      new LinkedBlockingDeque<>(), failedNamedThreadFactory);
 
 
   @Override
@@ -61,19 +78,26 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
         bizType, productType, baseRq);
     //check param
     checkBaseRq(baseRq);
+
     //first, find the matched charge face price,if is not exist ,throw biz exception
     FacePrice facePrice = matchTheAvailablePrice(baseRq);
     PretenderAccount pretenderAccount = findPretenderAccountByBizType(bizType);
     ResellerOrder resellerOrder = findMatchedResellerOrder(baseRq.getChargeAmount(), productType);
-    //do create order
-    PretenderOrder pretenderOrder = doCreateOrder(resellerOrder, pretenderAccount, facePrice);
-    //update the reseller order status to "PAYING"
-    savePretenderOrder(pretenderOrder);
-    logger.info(
-        "end [AbstractPretenderCreator.createOrder], success bizType={},productType={},baseRq={},pretenderOrder={}",
-        bizType,
-        productType, baseRq, pretenderOrder);
-    return pretenderOrder;
+    try {
+      //do create order
+      PretenderOrder pretenderOrder = doCreateOrder(resellerOrder, pretenderAccount, facePrice);
+      savePretenderOrder(pretenderOrder);
+      //update the reseller order status to "PAYING"
+      logger.info(
+          "end [AbstractPretenderCreator.createOrder], success bizType={},productType={},baseRq={},pretenderOrder={}",
+          bizType,
+          productType, baseRq, pretenderOrder);
+      pretenderAccountUseStatisticsRecorder.recorder(pretenderOrder);
+      return pretenderOrder;
+    } catch (Exception e) {
+      failedTaskExec.execute(() -> saveFailedPretenderOrder(resellerOrder, pretenderAccount));
+      throw e;
+    }
   }
 
   public void checkBaseRq(BaseRq baseRq) {
@@ -128,7 +152,7 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
 
 
   protected ProxyParams getProxy() {
-    return  proxyIpHunter.huntProxy();
+    return proxyIpHunter.huntProxy();
   }
 
   /**
@@ -199,5 +223,27 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
       throw new BizException(SYS_OPERATION_FAIL_CREATE);
     }
   }
+
+  private void saveFailedPretenderOrder(ResellerOrder resellerOrder,
+      PretenderAccount pretenderAccount) {
+    PretenderOrder pretenderOrder = buildFailedPretenderOrder(resellerOrder, pretenderAccount);
+    pretenderOrderService.save(pretenderOrder);
+    pretenderAccountUseStatisticsRecorder.recorder(pretenderOrder);
+  }
+
+  private PretenderOrder buildFailedPretenderOrder(ResellerOrder resellerOrder,
+      PretenderAccount pretenderAccount) {
+    PretenderOrder pretenderOrder = new PretenderOrder();
+    pretenderOrder.setAmount(resellerOrder.getAmount());
+    pretenderOrder.setGmtCreate(new Date());
+    pretenderOrder.setBizType(getBizType());
+    pretenderOrder.setPretenderAccountId(pretenderAccount.getId());
+    pretenderOrder.setMatchResellerOrderNo(resellerOrder.getOrderNo());
+    pretenderOrder.setPayWay(getPayWay());
+    pretenderOrder.setStatus(PretenderOrderStatusEnum.REQUEST_FAILED.getCode());
+    pretenderOrder.setProductType(getProductTypeEnum().getCode());
+    return pretenderOrder;
+  }
+
 
 }

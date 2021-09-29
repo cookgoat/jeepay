@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeequan.jeepay.service.mapper.PretenderAccountUseStatisticsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.jeequan.jeepay.core.entity.PretenderAccountUseStatistics">
+        <id column="id" property="id" />
+        <result column="pretender_account_id" property="pretenderAccountId" />
+        <result column="success_count" property="successCount" />
+        <result column="failed_count" property="failedCount" />
+        <result column="all_request_count" property="allRequestCount" />
+        <result column="gmt_create" property="gmtCreate" />
+        <result column="gmt_update" property="gmtUpdate" />
+        <result column="gmt_last_failed" property="gmtLastFailed" />
+        <result column="gmt_last_success" property="gmtLastSuccess" />
+        <result column="gmt_last" property="gmtLast" />
+    </resultMap>
+
+</mapper>

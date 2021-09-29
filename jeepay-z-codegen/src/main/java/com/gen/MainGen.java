@@ -20,13 +20,13 @@ public class MainGen {
 
     public static final String THIS_MODULE_NAME = "jeepay-z-codegen"; //当前项目名称
 
-    public static final String DB_URL = "jdbc:mysql://122.10.49.221:3306/jeepaydb?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true";
+    public static final String DB_URL = "jdbc:mysql://47.108.224.20:3306/jeepaydb?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true";
     public static final String DB_USERNAME = "root";
-    public static final String DB_PASSWORD = "asdf!A123$";
+    public static final String DB_PASSWORD = "zxcvbnm!A";
 
     // 多个用,  拼接
     //public static final String TABLE_NAMES= "t_sys_entitlement,t_sys_role,t_sys_user,t_sys_user_auth";
-    public static final String TABLE_NAMES= "t_reseller_order";
+    public static final String TABLE_NAMES= "t_pretender_account_use_statistics";
 
     public static void main(String[] args) {
 

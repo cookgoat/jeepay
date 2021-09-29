@@ -3,15 +3,15 @@ package com.jeequan.jeepay.pay.pretender.model.convert;
 import com.alibaba.druid.util.StringUtils;
 import com.jeequan.jeepay.core.utils.AmountUtil;
 import com.jeequan.jeepay.pay.pretender.model.FacePrice;
-import com.jeequan.jeepay.pay.pretender.propertycredit.kits.model.Goods;
-import com.jeequan.jeepay.pay.pretender.propertycredit.kits.model.GoodsType;
+import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.model.Goods;
+import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.model.GoodsType;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.jeequan.jeepay.pay.pretender.propertycredit.kits.CS.IS_DISCOUNT;
+import static com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.CS.IS_DISCOUNT;
 
 /**
  * @author axl rose

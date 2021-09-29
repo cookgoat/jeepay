@@ -6,7 +6,7 @@
     <resultMap id="BaseResultMap" type="com.jeequan.jeepay.core.entity.ResellerOrder">
         <id column="id" property="id" />
         <result column="order_no" property="orderNo" />
-        <result column="reseller_id" property="resellerId" />
+        <result column="reseller_no" property="resellerNo" />
         <result column="product_type" property="productType" />
         <result column="charge_account" property="chargeAccount" />
         <result column="amount" property="amount" />

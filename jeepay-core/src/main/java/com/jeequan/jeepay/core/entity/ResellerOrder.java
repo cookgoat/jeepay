@@ -47,7 +47,7 @@ public class ResellerOrder extends BaseModel implements Serializable {
     /**
      * 核销商id
      */
-    private Long resellerId;
+    private String resellerNo;
 
     /**
      * 业务类型

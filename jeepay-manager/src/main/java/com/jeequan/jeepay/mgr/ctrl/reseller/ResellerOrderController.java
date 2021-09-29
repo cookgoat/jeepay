@@ -3,7 +3,6 @@ package com.jeequan.jeepay.mgr.ctrl.reseller;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.jeequan.jeepay.components.oss.model.OssFileConfig;
 import com.jeequan.jeepay.core.aop.MethodLog;
 import com.jeequan.jeepay.core.constants.ApiCodeEnum;
 import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
@@ -11,17 +10,13 @@ import com.jeequan.jeepay.core.entity.ResellerOrder;
 import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.model.ApiRes;
 import com.jeequan.jeepay.core.utils.AmountUtil;
-import com.jeequan.jeepay.core.utils.FileKit;
 import com.jeequan.jeepay.mgr.ctrl.CommonCtrl;
-import com.jeequan.jeepay.service.ResellerOrderImportService;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
-import com.jeequan.jeepay.service.rq.ResellerOrderImportRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author axl rose
@@ -33,55 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ResellerOrderController extends CommonCtrl {
 
   @Autowired
-  private ResellerOrderImportService resellerOrderImportService;
-
-  @Autowired
   private ResellerOrderService resellerOrderService;
-
-  /**
-   * 导入
-   */
-  @PreAuthorize("hasAuthority('ENT_RESELLER_ORDER_GROUP_IMPORT')")
-  @PostMapping("/{productType}/")
-  public ApiRes batchUpload(@RequestParam("file") MultipartFile file,
-      @PathVariable("productType") String productType) {
-
-    if (file == null) {
-      return ApiRes.fail(ApiCodeEnum.SYSTEM_ERROR, "选择文件不存在");
-    }
-    try {
-
-      OssFileConfig ossFileConfig = OssFileConfig.getOssFileConfigByBizType(productType);
-
-      //1. 判断bizType 是否可用
-      if (ossFileConfig == null) {
-        throw new BizException("类型有误");
-      }
-
-      // 2. 判断文件是否支持
-      String fileSuffix = FileKit.getFileSuffix(file.getOriginalFilename(), false);
-      if (!ossFileConfig.isAllowFileSuffix(fileSuffix)) {
-        throw new BizException("上传文件格式不支持！");
-      }
-
-      // 3. 判断文件大小是否超限
-      if (!ossFileConfig.isMaxSizeLimit(file.getSize())) {
-        throw new BizException("上传大小请限制在[" + ossFileConfig.getMaxSize() / 1024 / 1024 + "M]以内！");
-      }
-      ResellerOrderImportRequest resellerImportRequest = new ResellerOrderImportRequest();
-      resellerImportRequest.setCurrentUserId(getCurrentUser().getSysUser().getSysUserId());
-      resellerImportRequest.setProductType(productType);
-      resellerImportRequest.setMultipartFile(file);
-      resellerOrderImportService.batchImport(resellerImportRequest);
-      return ApiRes.ok();
-    } catch (BizException biz) {
-      throw biz;
-    } catch (Exception e) {
-      logger.error("upload error, fileName = {}", file.getOriginalFilename(), e);
-      throw new BizException(ApiCodeEnum.SYSTEM_ERROR);
-    }
-  }
-
 
   @PreAuthorize("hasAnyAuthority('ENT_RESELLER_ORDER_GROUP_LIST')")
   @GetMapping
@@ -93,8 +40,8 @@ public class ResellerOrderController extends CommonCtrl {
     if (StringUtils.isNotEmpty(resellerOrder.getOrderNo())) {
       condition.eq(ResellerOrder::getOrderNo, resellerOrder.getOrderNo());
     }
-    if (resellerOrder.getResellerId() != null) {
-      condition.eq(ResellerOrder::getResellerId, resellerOrder.getResellerId());
+    if (StringUtils.isNotBlank(resellerOrder.getResellerNo())) {
+      condition.eq(ResellerOrder::getResellerNo, resellerOrder.getResellerNo());
     }
     if (StringUtils.isNotBlank(resellerOrder.getProductType())) {
       condition.like(ResellerOrder::getProductType, resellerOrder.getProductType());
@@ -144,7 +91,7 @@ public class ResellerOrderController extends CommonCtrl {
 
   @PreAuthorize("hasAuthority('ENT_RESELLER_ORDER_GROUP_EDIT')")
   @PutMapping("/{resellerOrderId}")
-  @MethodLog(remark = "更新支付方式")
+  @MethodLog(remark = "更新订单")
   public ApiRes update(@PathVariable("resellerOrderId") Long resellerOrderId) {
     ResellerOrder resellerOrder = getObject(ResellerOrder.class);
     resellerOrder.setId(resellerOrderId);
@@ -160,7 +107,7 @@ public class ResellerOrderController extends CommonCtrl {
 
   @PreAuthorize("hasAuthority('ENT_RESELLER_ORDER_GROUP_DELETE')")
   @DeleteMapping("/{resellerOrderId}")
-  @MethodLog(remark = "删除支付方式")
+  @MethodLog(remark = "删除订单")
   public ApiRes delete(@PathVariable("resellerOrderId") Long resellerOrderId) {
     int count = resellerOrderService.count(ResellerOrder.gw()
         .eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.FINISH)

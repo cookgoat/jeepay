@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeequan.jeepay.service.mapper.ResellerFundLineMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.jeequan.jeepay.core.entity.ResellerFundLine">
+        <id column="id" property="id" />
+        <result column="reseller_no" property="resellerNo" />
+        <result column="before_recoveries_amount" property="beforeRecoveriesAmount" />
+        <result column="change_recoveries_amount" property="changeRecoveriesAmount" />
+        <result column="after_recoveries_amount" property="afterRecoveriesAmount" />
+        <result column="product_type" property="productType" />
+        <result column="biz_type" property="bizType" />
+        <result column="product_order_no" property="productOrderNo" />
+        <result column="order_amount" property="orderAmount" />
+        <result column="reseller_share_amount" property="resellerShareAmount" />
+        <result column="gmt_create" property="gmtCreate" />
+    </resultMap>
+
+</mapper>

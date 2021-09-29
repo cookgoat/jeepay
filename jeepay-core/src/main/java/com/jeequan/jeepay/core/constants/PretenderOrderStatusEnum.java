@@ -7,6 +7,7 @@ package com.jeequan.jeepay.core.constants;
 public enum PretenderOrderStatusEnum {
     PAYING("PAYING","支付中"),
     OVER_TIME("OVER_TIME","超时"),
+    REQUEST_FAILED("REQUEST_FAILED","请求失败"),
     FINISH("FINISH","完成支付");
 
     private final String code;

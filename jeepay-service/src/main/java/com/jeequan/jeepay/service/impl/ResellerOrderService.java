@@ -25,4 +25,5 @@ public class ResellerOrderService extends ServiceImpl<ResellerOrderMapper, Resel
         paramMap.put("productType",productType);
         return  this.getBaseMapper().randomByAmountAndProductType(paramMap);
     }
+
 }
