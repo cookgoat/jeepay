@@ -102,6 +102,9 @@ public class PayOrderController extends CommonCtrl {
         if (payOrder.getDivisionState() != null) {
             wrapper.eq(PayOrder::getDivisionState, payOrder.getDivisionState());
         }
+        if (payOrder.getDivisionState() != null) {
+            wrapper.eq(PayOrder::getAmount, payOrder.getAmount());
+        }
         JSONObject paramJSON = getReqParamJSON();
         if (paramJSON != null) {
             if (StringUtils.isNotEmpty(paramJSON.getString("createdStart"))) {

@@ -16,9 +16,11 @@ import com.jeequan.jeepay.core.model.params.ProxyParams;
 import com.jeequan.jeepay.pay.pretender.model.FacePrice;
 import com.jeequan.jeepay.core.constants.ProductTypeEnum;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
-import com.jeequan.jeepay.service.impl.PretenderOrderService;
 import com.jeequan.jeepay.pay.pretender.proxy.ProxyIpHunter;
+import com.jeequan.jeepay.service.impl.PretenderOrderService;
+
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.*;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.jeequan.jeepay.service.impl.PretenderAccountService;
@@ -245,5 +247,17 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
     return pretenderOrder;
   }
 
+  @Override
+  public boolean hasPretenderAccount(BaseRq baseRq) {
+    PretenderAccount pretenderAccount = findPretenderAccountByBizType(getBizType());
+    return pretenderAccount != null;
+  }
+
+  @Override
+  public boolean hasResellerOrder(BaseRq baseRq) {
+    String productType = getProductTypeEnum().getCode();
+    ResellerOrder resellerOrder = findMatchedResellerOrder(baseRq.getChargeAmount(), productType);
+    return resellerOrder != null;
+  }
 
 }

@@ -17,4 +17,9 @@ public interface PretenderOrderCreator {
      */
     PretenderOrder  createOrder(BaseRq  baseRq);
 
+
+    boolean hasPretenderAccount(BaseRq  baseRq);
+
+    boolean hasResellerOrder(BaseRq  baseRq);
+
 }

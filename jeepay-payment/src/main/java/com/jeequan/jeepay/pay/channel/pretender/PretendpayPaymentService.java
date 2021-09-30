@@ -1,32 +1,26 @@
 package com.jeequan.jeepay.pay.channel.pretender;
 
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.jeequan.jeepay.core.constants.CS;
-import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
-import com.jeequan.jeepay.core.entity.PayOrder;
-import com.jeequan.jeepay.core.entity.PretenderOrder;
-import com.jeequan.jeepay.core.entity.ResellerOrder;
-import com.jeequan.jeepay.core.exception.BizException;
-import com.jeequan.jeepay.core.model.params.prentender.PrentenderpayNormalMchParams;
-import com.jeequan.jeepay.pay.channel.AbstractPaymentService;
-import com.jeequan.jeepay.pay.model.MchAppConfigContext;
-import com.jeequan.jeepay.pay.pretender.PretenderOrderFactory;
-import com.jeequan.jeepay.pay.pretender.rq.BaseRq;
-import com.jeequan.jeepay.pay.rqrs.AbstractRS;
-import com.jeequan.jeepay.pay.rqrs.msg.ChannelRetMsg;
-import com.jeequan.jeepay.pay.rqrs.payorder.CommonPayDataRS;
-import com.jeequan.jeepay.pay.rqrs.payorder.UnifiedOrderRQ;
-import com.jeequan.jeepay.pay.util.PaywayUtil;
-import com.jeequan.jeepay.service.impl.PayOrderService;
-import com.jeequan.jeepay.service.impl.ResellerOrderService;
-import lombok.extern.slf4j.Slf4j;
+import com.jeequan.jeepay.pay.rqrs.msg.ChannelRetMsg.ChannelState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
+import com.jeequan.jeepay.core.constants.CS;
+import com.jeequan.jeepay.core.entity.PayOrder;
+import com.jeequan.jeepay.pay.rqrs.AbstractRS;
+import com.jeequan.jeepay.pay.util.PaywayUtil;
 import org.springframework.stereotype.Service;
+import com.jeequan.jeepay.pay.pretender.rq.BaseRq;
+import com.jeequan.jeepay.pay.rqrs.msg.ChannelRetMsg;
+import com.jeequan.jeepay.service.impl.SysConfigService;
+import com.jeequan.jeepay.pay.model.MchAppConfigContext;
+import com.jeequan.jeepay.pay.rqrs.payorder.UnifiedOrderRQ;
+import com.jeequan.jeepay.pay.rqrs.payorder.CommonPayDataRS;
+import com.jeequan.jeepay.pay.pretender.PretenderOrderFactory;
+import com.jeequan.jeepay.pay.pretender.PretenderOrderCreator;
+import com.jeequan.jeepay.pay.channel.AbstractPaymentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Date;
-import static com.jeequan.jeepay.core.constants.ApiCodeEnum.SYS_OPERATION_FAIL_CREATE;
+import com.jeequan.jeepay.core.model.params.prentender.PrentenderpayNormalMchParams;
 
 /**
  * @author axl rose
@@ -42,10 +36,8 @@ public class PretendpayPaymentService extends AbstractPaymentService {
   private PretenderOrderFactory pretenderOrderFactory;
 
   @Autowired
-  private ResellerOrderService resellerOrderService;
+  private SysConfigService sysConfigService;
 
-  @Autowired
-  private PayOrderService payOrderService;
 
   @Override
   public String getIfCode() {
@@ -74,36 +66,16 @@ public class PretendpayPaymentService extends AbstractPaymentService {
             prentenderpayNormalMchParams.getProductType());
     BaseRq baseRq = new BaseRq();
     baseRq.setChargeAmount(payOrder.getAmount());
-    PretenderOrder pretenderOrder = pretenderOrderFactory.getInstance(serviceName)
-        .createOrder(baseRq);
-    CommonPayDataRS commonPayDataRS = new CommonPayDataRS();
-    commonPayDataRS.setPayUrl(pretenderOrder.getPayUrl());
-    ChannelRetMsg channelRetMsg = new ChannelRetMsg();
-    commonPayDataRS.setChannelRetMsg(channelRetMsg);
-    updateResellerOrderToPaying(payOrder, pretenderOrder);
-    payOrder.setChannelOrderNo(pretenderOrder.getOutTradeNo());
-    payOrderService.update(new LambdaUpdateWrapper<PayOrder>()
-        .set(PayOrder::getChannelOrderNo, pretenderOrder.getOutTradeNo())
-        .set(PayOrder::getResellerOrderNo,pretenderOrder.getMatchResellerOrderNo())
-        .eq(PayOrder::getPayOrderId, payOrder.getPayOrderId()));
+    PretenderOrderCreator pretenderOrderCreator = pretenderOrderFactory.getInstance(serviceName);
+    pretenderOrderCreator.hasPretenderAccount(baseRq);
+    pretenderOrderCreator.hasResellerOrder(baseRq);
     //放置 响应数据
-    channelRetMsg.setChannelState(ChannelRetMsg.ChannelState.WAITING);
+    CommonPayDataRS commonPayDataRS = new CommonPayDataRS();
+    commonPayDataRS.setPayUrl(sysConfigService.getDBApplicationConfig().genMatchOrderUrl(payOrder.getPayOrderId()));
+    ChannelRetMsg channelRetMsg = new ChannelRetMsg();
+    channelRetMsg.setChannelState(ChannelState.WAITING);
+    commonPayDataRS.setChannelRetMsg(channelRetMsg);
     return commonPayDataRS;
-  }
-
-  public void updateResellerOrderToPaying(PayOrder payOrder, PretenderOrder pretenderOrder) {
-    boolean isSuccess = resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>()
-        .set(ResellerOrder::getGmtPayingStart, new Date())
-        .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.PAYING.getCode())
-        .set(ResellerOrder::getGmtUpdate, new Date())
-        .set(ResellerOrder::getMatchOutTradeNo, payOrder.getPayOrderId())
-        .eq(ResellerOrder::getOrderNo, pretenderOrder.getMatchResellerOrderNo()));
-    if (!isSuccess) {
-      logger.error(
-          "[AbstractPropertyCreditOrderCreator.updateResellerOrderToPaying] failed update resellerOrder failed ,save pretender order failed,pretenderOrder={}",
-          pretenderOrder);
-      throw new BizException(SYS_OPERATION_FAIL_CREATE);
-    }
   }
 
 }

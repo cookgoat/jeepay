@@ -21,6 +21,7 @@ import com.jeequan.jeepay.core.utils.JeepayKit;
 import lombok.Data;
 
 import java.io.Serializable;
+import org.apache.commons.lang3.StringUtils;
 
 /*
 * 系统应用配置项定义Bean
@@ -34,7 +35,6 @@ public class DBApplicationConfig implements Serializable {
 
     /** 运营系统地址 **/
     private String mgrSiteUrl;
-
     /** 商户系统地址 **/
     private String mchSiteUrl;
 
@@ -43,15 +43,12 @@ public class DBApplicationConfig implements Serializable {
 
     /** oss公共读文件地址 **/
     private String ossPublicSiteUrl;
-
     /**
      *
      * 匹配地址
      *
      */
     private String matchOrderUrl;
-
-
     /**
      *
      * Ip代理私密地址
@@ -63,6 +60,11 @@ public class DBApplicationConfig implements Serializable {
      * 通知渠道状态
      */
     private String  pretenderNotifyStatus;
+
+    /**
+     * 最大通知失效时间
+     */
+    private String orderMaxExpireMin;
 
     /** 生成  【jsapi统一收银台跳转地址】 **/
     public String genUniJsapiPayUrl(String payOrderId){
@@ -92,6 +94,13 @@ public class DBApplicationConfig implements Serializable {
     /** 生成  【生成订单匹配地址】 **/
     public String genMatchOrderUrl(String orderNo){
         return getMatchOrderUrl() + JeepayKit.aesEncode(orderNo) ;
+    }
+
+    public  long getOrderMaxExpireMin(){
+        if(StringUtils.isBlank(orderMaxExpireMin)){
+            return 7;
+        }
+      return Long.valueOf(orderMaxExpireMin);
     }
 
 }

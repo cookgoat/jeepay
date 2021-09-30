@@ -122,8 +122,8 @@ public class PretenderResellerProductConfigurerImpl implements PretenderReseller
   }
 
   private void checkCredit(ResellerPretenderProduct resellerPretenderProduct){
-    if(resellerPretenderProduct.getRecoveriesAmount()==null){
-      resellerPretenderProduct.setRecoveriesAmount(0L);
+    if(resellerPretenderProduct==null||resellerPretenderProduct.getRecoveriesAmount()==null){
+      return;
     }
     if(resellerPretenderProduct.getCreditAmount()!=null&&resellerPretenderProduct.getCreditAmount()>0){
       if(resellerPretenderProduct.getRecoveriesAmount()>resellerPretenderProduct.getCreditAmount()){

@@ -1,7 +1,18 @@
 package com.jeequan.jeepay.pay.channel.pretender;
 
-import static com.jeequan.jeepay.core.constants.ApiCodeEnum.QUERY_PRETENDER_ORDER_FAILED;
+
+import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jeequan.jeepay.core.constants.CS;
 import com.jeequan.jeepay.core.constants.PretenderOrderStatusEnum;
 import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
@@ -15,18 +26,14 @@ import com.jeequan.jeepay.pay.channel.IPayOrderQueryService;
 import com.jeequan.jeepay.pay.model.MchAppConfigContext;
 import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.PropertyCreditUtil;
 import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.rq.QueryOrderRequest;
-import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.rs.QueryOrderResult;
 import com.jeequan.jeepay.pay.rqrs.msg.ChannelRetMsg;
+import com.jeequan.jeepay.service.impl.SysConfigService;
+import com.jeequan.jeepay.service.impl.ResellerOrderService;
+import com.jeequan.jeepay.service.impl.PretenderOrderService;
 import com.jeequan.jeepay.service.biz.ResellerFundLineRecorder;
 import com.jeequan.jeepay.service.impl.PretenderAccountService;
-import com.jeequan.jeepay.service.impl.PretenderOrderService;
-import com.jeequan.jeepay.service.impl.ResellerOrderService;
-import com.jeequan.jeepay.service.impl.SysConfigService;
-import java.util.Date;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.rs.QueryOrderResult;
+import static com.jeequan.jeepay.core.constants.ApiCodeEnum.QUERY_PRETENDER_ORDER_FAILED;
 
 /**
  *
@@ -50,7 +57,15 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
   @Autowired
   private SysConfigService sysConfigService;
 
-  private static final long MAX_PAY_MINUTES = 10;
+  /**
+   * 异步处理线程池
+   */
+  private ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+      .setNameFormat("pretender-order-query-thread-call-runner-%d").build();
+
+  protected ExecutorService taskExec = new ThreadPoolExecutor(10, 20, 200L, TimeUnit.MILLISECONDS,
+      new LinkedBlockingDeque<>(), namedThreadFactory);
+
 
   @Override
   public String getIfCode() {
@@ -80,10 +95,11 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
       throw new BizException(QUERY_PRETENDER_ORDER_FAILED);
     }
     String notifyStatus = sysConfigService.getDBApplicationConfig().getPretenderNotifyStatus();
-    if (StringUtils.equalsIgnoreCase(notifyStatus,queryOrderResult.getData().getStatus())) {
+    if (StringUtils.equalsIgnoreCase(notifyStatus, queryOrderResult.getData().getStatus())||
+        queryOrderResult.getData().isSuccess()  ) {
       doSuccess(resellerOrder, pretenderOrder, payOrder);
       //todo use mq or thread
-      resellerFundLineRecorder.record(pretenderOrder);
+      taskExec.execute(() -> resellerFundLineRecorder.record(pretenderOrder));
       return ChannelRetMsg.confirmSuccess(queryOrderResult.getData().getOrderNo());
     }
     if (queryOrderResult.getData().isWaiting()) {
@@ -98,8 +114,11 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
 
 
   private boolean isExpire(ResellerOrder resellerOrder) {
+    if (resellerOrder == null||resellerOrder.getGmtPayingStart()==null) {
+      return true;
+    }
     return DateUtil.getDistanceMinute(resellerOrder.getGmtPayingStart(), new Date())
-        > MAX_PAY_MINUTES;
+        > sysConfigService.getDBApplicationConfig().getOrderMaxExpireMin();
   }
 
 
@@ -121,17 +140,17 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
 
   }
 
-
   protected void doExpireOperation(ResellerOrder resellerOrder, PretenderOrder pretenderOrder) {
     //update the resellerOrder,reset the status
     Date now = new Date();
-    resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>()
-        .set(ResellerOrder::getMatchOutTradeNo, null)
-        .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.WAITING_PAY.getCode())
-        .set(ResellerOrder::getGmtPayingStart, null)
-        .set(ResellerOrder::getGmtUpdate, now)
-        .eq(ResellerOrder::getId, resellerOrder.getId()));
-
+    if (resellerOrder != null) {
+      resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>()
+          .set(ResellerOrder::getMatchOutTradeNo, null)
+          .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.WAITING_PAY.getCode())
+          .set(ResellerOrder::getGmtPayingStart, null)
+          .set(ResellerOrder::getGmtUpdate, now)
+          .eq(ResellerOrder::getId, resellerOrder.getId()));
+    }
     pretenderOrderService.update((new LambdaUpdateWrapper<PretenderOrder>()
         .set(PretenderOrder::getStatus, PretenderOrderStatusEnum.OVER_TIME)
         .set(PretenderOrder::getGmtUpdate, now)

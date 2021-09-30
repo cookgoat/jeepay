@@ -66,7 +66,7 @@ public class PayOrderService extends ServiceImpl<PayOrderMapper, PayOrder> {
         updateRecord.setChannelUser(payOrder.getChannelUser());
 
         return update(updateRecord, new LambdaUpdateWrapper<PayOrder>()
-                .eq(PayOrder::getPayOrderId, payOrderId).eq(PayOrder::getState, PayOrder.STATE_INIT));
+            .eq(PayOrder::getPayOrderId, payOrderId).eq(PayOrder::getState, PayOrder.STATE_INIT));
     }
 
     /** 更新订单状态  【支付中】 --》 【支付成功】 **/
@@ -79,7 +79,7 @@ public class PayOrderService extends ServiceImpl<PayOrderMapper, PayOrder> {
         updateRecord.setSuccessTime(new Date());
 
         return update(updateRecord, new LambdaUpdateWrapper<PayOrder>()
-                .eq(PayOrder::getPayOrderId, payOrderId).eq(PayOrder::getState, PayOrder.STATE_ING));
+            .eq(PayOrder::getPayOrderId, payOrderId).eq(PayOrder::getState, PayOrder.STATE_ING));
     }
 
 
@@ -94,7 +94,7 @@ public class PayOrderService extends ServiceImpl<PayOrderMapper, PayOrder> {
         updateRecord.setChannelUser(channelUserId);
 
         return update(updateRecord, new LambdaUpdateWrapper<PayOrder>()
-                .eq(PayOrder::getPayOrderId, payOrderId).eq(PayOrder::getState, PayOrder.STATE_ING));
+            .eq(PayOrder::getPayOrderId, payOrderId).eq(PayOrder::getState, PayOrder.STATE_ING));
     }
 
     /** 更新订单状态  【支付中】 --》 【支付取消】 **/
@@ -104,7 +104,7 @@ public class PayOrderService extends ServiceImpl<PayOrderMapper, PayOrder> {
         updateRecord.setChannelOrderNo(channelOrderNo);
         updateRecord.setChannelUser(channelUserId);
         return update(updateRecord, new LambdaUpdateWrapper<PayOrder>()
-                .eq(PayOrder::getPayOrderId, payOrderId).eq(PayOrder::getState, PayOrder.STATE_ING));
+            .eq(PayOrder::getPayOrderId, payOrderId).eq(PayOrder::getState, PayOrder.STATE_ING));
     }
 
     /** 更新订单状态  【支付中】 --》 【支付成功/支付失败】 **/
@@ -132,6 +132,12 @@ public class PayOrderService extends ServiceImpl<PayOrderMapper, PayOrder> {
         }
     }
 
+    public PayOrder queryOrder(String payOrderId){
+        if(StringUtils.isEmpty(payOrderId)){
+            return null;
+        }
+        return getOne(PayOrder.gw().eq(PayOrder::getPayOrderId, payOrderId));
+    }
 
     public Map payCount(String mchNo, Byte state, Byte refundState, String dayStart, String dayEnd) {
         Map param = new HashMap<>();
@@ -180,9 +186,9 @@ public class PayOrderService extends ServiceImpl<PayOrderMapper, PayOrder> {
         payOrder.setState(PayOrder.STATE_CLOSED);
 
         return baseMapper.update(payOrder,
-                PayOrder.gw()
-                        .in(PayOrder::getState, Arrays.asList(PayOrder.STATE_INIT, PayOrder.STATE_ING))
-                        .le(PayOrder::getExpiredTime, new Date())
+            PayOrder.gw()
+                .in(PayOrder::getState, Arrays.asList(PayOrder.STATE_INIT, PayOrder.STATE_ING))
+                .le(PayOrder::getExpiredTime, new Date())
         );
     }
 
@@ -369,12 +375,12 @@ public class PayOrderService extends ServiceImpl<PayOrderMapper, PayOrder> {
 
 
     /**
-    *  计算支付订单商家入账金额
-    * 商家订单入账金额 （支付金额 - 手续费 - 退款金额 - 总分账金额）
-    * @author terrfly
-    * @site https://www.jeequan.com
-    * @date 2021/8/26 16:39
-    */
+     *  计算支付订单商家入账金额
+     * 商家订单入账金额 （支付金额 - 手续费 - 退款金额 - 总分账金额）
+     * @author terrfly
+     * @site https://www.jeequan.com
+     * @date 2021/8/26 16:39
+     */
     public Long calMchIncomeAmount(PayOrder dbPayOrder){
 
         //商家订单入账金额 （支付金额 - 手续费 - 退款金额 - 总分账金额）
