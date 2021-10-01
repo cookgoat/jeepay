@@ -1,5 +1,9 @@
 package com.jeequan.jeepay.pay.server;
 
+import com.jeequan.jeepay.core.entity.PayOrder;
+import com.jeequan.jeepay.core.utils.AmountUtil;
+import com.jeequan.jeepay.core.utils.JeepayKit;
+import com.jeequan.jeepay.service.impl.PayOrderService;
 import org.slf4j.Logger;
 import java.io.IOException;
 import javax.websocket.OnClose;
@@ -31,9 +35,16 @@ public class WsMatchPayOrderServer {
 
   private static PretenderOrderMatcher pretenderOrderMatcher;
 
+  private  static PayOrderService payOrderService;
+
   @Autowired
   public void setPretenderOrderMatcher(PretenderOrderMatcher pretenderOrderMatcher) {
     WsMatchPayOrderServer.pretenderOrderMatcher = pretenderOrderMatcher;
+  }
+
+  @Autowired
+  public void setPayOrderService(PayOrderService payOrderService) {
+    WsMatchPayOrderServer.payOrderService = payOrderService;
   }
 
   /**
@@ -77,14 +88,19 @@ public class WsMatchPayOrderServer {
     if (StringUtils.isBlank(message)) {
       return;
     }
-
+    MatchPayDtaRs matchPayDtaRs;
+    String desOrderId = JeepayKit.aesDecode(message);
+    PayOrder payOrder = payOrderService.queryOrder(desOrderId);
+    matchPayDtaRs = new MatchPayDtaRs();
+    matchPayDtaRs.setMchOrderNo(payOrder.getMchOrderNo());
+    matchPayDtaRs.setAmount(AmountUtil.convertCent2Dollar(payOrder.getAmount()));
+    session.getBasicRemote().sendText(JSON.toJSONString(matchPayDtaRs));
     Object ans = new RetryTemplate() {
       @Override
       protected Object doBiz() {
         return pretenderOrderMatcher.matchOrder(message);
       }
     }.setRetryTime(3).setSleepTime(10000).execute();
-    MatchPayDtaRs matchPayDtaRs;
     if (ans == null) {
       matchPayDtaRs = new MatchPayDtaRs();
       matchPayDtaRs.setCode("4009");
