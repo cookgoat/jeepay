@@ -62,7 +62,11 @@ public class PretenderOrderMatcherImpl implements PretenderOrderMatcher {
       matchPayDtaRs.setChannelRetMsg(ChannelRetMsg.confirmFail());
       return matchPayDtaRs;
     }
-
+    matchPayDtaRs.setPayType(payOrder.getWayCode());
+    matchPayDtaRs
+        .setMatchEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 30, 0));
+    matchPayDtaRs.setAmount(AmountUtil.convertCent2Dollar(payOrder.getAmount()));
+    matchPayDtaRs.setMchOrderNo(payOrder.getMchOrderNo());
     if (payOrder.getState() == PayOrder.STATE_SUCCESS) {
       matchPayDtaRs.setCode("4007");
       matchPayDtaRs.setChannelRetMsg(ChannelRetMsg.confirmFail());
@@ -103,15 +107,11 @@ public class PretenderOrderMatcherImpl implements PretenderOrderMatcher {
     baseRq.setChargeAmount(payOrder.getAmount());
     PretenderOrder pretenderOrder = pretenderOrderFactory.getInstance(serviceName)
         .createOrder(baseRq);
-    matchPayDtaRs.setPayType(payOrder.getWayCode());
-    matchPayDtaRs
-        .setMatchEndTime(DateUtil.addDate(pretenderOrder.getGmtCreate(), 0, 0, 0, 0, 0, 30, 0));
+
     matchPayDtaRs.setPayUrl(pretenderOrder.getPayUrl());
-    matchPayDtaRs.setAmount(AmountUtil.convertCent2Dollar(payOrder.getAmount()));
     updateResellerOrderToPaying(payOrder, pretenderOrder);
     payOrder.setChannelOrderNo(pretenderOrder.getOutTradeNo());
     matchPayDtaRs.setChannelRetMsg(ChannelRetMsg.confirmSuccess(pretenderOrder.getOutTradeNo()));
-    matchPayDtaRs.setMchOrderNo(payOrder.getMchOrderNo());
     matchPayDtaRs.setCode("4004");
     payOrderService.update(new LambdaUpdateWrapper<PayOrder>()
         .set(PayOrder::getChannelOrderNo, pretenderOrder.getOutTradeNo())
