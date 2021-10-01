@@ -94,6 +94,7 @@ public class WsMatchPayOrderServer {
     matchPayDtaRs = new MatchPayDtaRs();
     matchPayDtaRs.setMchOrderNo(payOrder.getMchOrderNo());
     matchPayDtaRs.setAmount(AmountUtil.convertCent2Dollar(payOrder.getAmount()));
+    matchPayDtaRs.setPayType(payOrder.getWayCode());
     session.getBasicRemote().sendText(JSON.toJSONString(matchPayDtaRs));
     Object ans = new RetryTemplate() {
       @Override
