@@ -1,5 +1,7 @@
 package com.jeequan.jeepay.core.constants;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * @author axl rose
  * @date 2021/9/12
@@ -31,6 +33,16 @@ public enum ResellerOrderStatusEnum {
 
     public String getMsg() {
         return this.msg;
+    }
+
+
+    public static ResellerOrderStatusEnum getType(String code){
+        for(ResellerOrderStatusEnum productTypeEnum: ResellerOrderStatusEnum.values()){
+            if(StringUtils.equalsIgnoreCase(productTypeEnum.getCode(),code)){
+                return productTypeEnum;
+            }
+        }
+        return null;
     }
 
 }

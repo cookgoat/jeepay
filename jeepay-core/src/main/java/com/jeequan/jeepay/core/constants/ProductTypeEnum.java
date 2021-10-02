@@ -37,5 +37,13 @@ public enum ProductTypeEnum {
         return false;
     }
 
+  public static ProductTypeEnum getType(String code){
+    for(ProductTypeEnum productTypeEnum: ProductTypeEnum.values()){
+      if(StringUtils.equalsIgnoreCase(productTypeEnum.getCode(),code)){
+        return productTypeEnum;
+      }
+    }
+    return null;
+  }
 
 }

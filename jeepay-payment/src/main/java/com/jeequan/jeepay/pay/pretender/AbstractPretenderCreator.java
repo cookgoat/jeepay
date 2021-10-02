@@ -1,6 +1,5 @@
 package com.jeequan.jeepay.pay.pretender;
 
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
@@ -19,16 +18,15 @@ import com.jeequan.jeepay.core.constants.ProductTypeEnum;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
 import com.jeequan.jeepay.pay.pretender.proxy.ProxyIpHunter;
 import com.jeequan.jeepay.service.impl.PretenderOrderService;
-
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.*;
-
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.jeequan.jeepay.service.impl.PretenderAccountService;
+import org.springframework.transaction.annotation.Transactional;
 import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.core.constants.PretenderOrderStatusEnum;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.jeequan.jeepay.service.biz.PretenderAccountUseStatisticsRecorder;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author axl rose
@@ -55,7 +53,7 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
   protected PretenderAccountUseStatisticsRecorder pretenderAccountUseStatisticsRecorder;
 
   /**
-   * 异步处理线程池
+   * 订单处理异步处理线程池
    */
   private ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
       .setNameFormat("pretender-order-creator-thread-call-runner-%d").build();
@@ -64,7 +62,7 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
       new LinkedBlockingDeque<>(), namedThreadFactory);
 
   /**
-   * 异步处理线程池
+   * 错误日志记录处理线程池
    */
   private ThreadFactory failedNamedThreadFactory = new ThreadFactoryBuilder()
       .setNameFormat("pretender-order-save-failed-thread-call-runner-%d").build();
@@ -77,29 +75,34 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
   @Override
   @Transactional(rollbackFor = Exception.class)
   public PretenderOrder createOrder(BaseRq baseRq) {
+    //get bizType from concrete
     String bizType = getBizType();
+    //get productType from concrete
     String productType = getProductTypeEnum().getCode();
     logger.info("start [AbstractPretenderCreator.createOrder],bizType={},productType={},baseRq={}",
         bizType, productType, baseRq);
     //check param
     checkBaseRq(baseRq);
-
     //first, find the matched charge face price,if is not exist ,throw biz exception
     FacePrice facePrice = matchTheAvailablePrice(baseRq);
+    // get pretender account
     PretenderAccount pretenderAccount = findPretenderAccountByBizType(bizType);
+    //get reseller order
     ResellerOrder resellerOrder = findMatchedResellerOrder(baseRq.getChargeAmount(), productType);
     try {
-      //do create order
+      //do concrete create order
       PretenderOrder pretenderOrder = doCreateOrder(resellerOrder, pretenderAccount, facePrice);
+      //save the pretender order
       savePretenderOrder(pretenderOrder);
-      //update the reseller order status to "PAYING"
       logger.info(
           "end [AbstractPretenderCreator.createOrder], success bizType={},productType={},baseRq={},pretenderOrder={}",
           bizType,
           productType, baseRq, pretenderOrder);
+      //record the pretender account  log
       pretenderAccountUseStatisticsRecorder.recorder(pretenderOrder);
       return pretenderOrder;
     } catch (Exception e) {
+      //save failed pretender log
       failedTaskExec.execute(() -> saveFailedPretenderOrder(resellerOrder, pretenderAccount));
       throw e;
     }
