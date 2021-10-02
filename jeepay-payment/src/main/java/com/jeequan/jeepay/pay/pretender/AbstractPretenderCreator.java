@@ -101,8 +101,6 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
       return pretenderOrder;
     } catch (Exception e) {
       failedTaskExec.execute(() -> saveFailedPretenderOrder(resellerOrder, pretenderAccount));
-      resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>().set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.WAITING_PAY)
-          .eq(ResellerOrder::getId,resellerOrder.getId()));
       throw e;
     }
   }
@@ -218,7 +216,9 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
     if (resellerOrder == null) {
       throw new BizException(NO_RESELLER_ORDER);
     }
-    resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>().set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.MATCHING)
+    resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>()
+        .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.MATCHING)
+            .set(ResellerOrder::getGmtUpdate,new Date())
         .eq(ResellerOrder::getId,resellerOrder.getId()));
     return resellerOrder;
   }
