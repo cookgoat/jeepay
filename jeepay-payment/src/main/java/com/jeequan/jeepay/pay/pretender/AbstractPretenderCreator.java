@@ -1,5 +1,6 @@
 package com.jeequan.jeepay.pay.pretender;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import com.jeequan.jeepay.service.impl.PretenderAccountService;
 import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.core.constants.PretenderOrderStatusEnum;
 import com.jeequan.jeepay.service.biz.PretenderAccountUseStatisticsRecorder;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author axl rose
@@ -73,6 +75,7 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
 
 
   @Override
+  @Transactional(rollbackFor = Exception.class)
   public PretenderOrder createOrder(BaseRq baseRq) {
     String bizType = getBizType();
     String productType = getProductTypeEnum().getCode();
@@ -213,6 +216,8 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
     if (resellerOrder == null) {
       throw new BizException(NO_RESELLER_ORDER);
     }
+    resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>().set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.MATCHING)
+        .eq(ResellerOrder::getId,resellerOrder.getId()));
     return resellerOrder;
   }
 

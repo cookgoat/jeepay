@@ -82,6 +82,9 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
     PretenderOrder pretenderOrder = pretenderOrderService
         .getOne(PretenderOrder.gw().eq(PretenderOrder::getOutTradeNo, payOrder.getChannelOrderNo())
             .eq(PretenderOrder::getStatus, PretenderOrderStatusEnum.PAYING), true);
+    if(pretenderOrder==null){
+      return ChannelRetMsg.confirmFail();
+    }
     QueryOrderRequest queryOrderRequest = new QueryOrderRequest();
     queryOrderRequest.setOrderNo(pretenderOrder.getOutTradeNo());
     PretenderAccount pretenderAccount = pretenderAccountService.getOne(

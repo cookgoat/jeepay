@@ -120,7 +120,7 @@ public class ResellerOrderController extends CommonCtrl {
         condition.le(ResellerOrder::getGmtCreate, paramJSON.getString("createdEnd"));
       }
     }
-    condition.orderByDesc(ResellerOrder::getGmtCreate);
+    condition.orderByDesc(ResellerOrder::getId);
     IPage<ResellerOrder> pages = resellerOrderService.page(getIPage(true), condition);
     return ApiRes.page(pages);
   }

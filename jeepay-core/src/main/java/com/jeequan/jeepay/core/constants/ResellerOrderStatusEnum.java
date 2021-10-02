@@ -10,6 +10,8 @@ public enum ResellerOrderStatusEnum {
 
     PAYING("PAYING","支付中"),
 
+    MATCHING("MATCHING","匹配中"),
+
     NULLIFY("NULLIFY","已经作废"),
 
     FINISH("FINISH","订单完成");
