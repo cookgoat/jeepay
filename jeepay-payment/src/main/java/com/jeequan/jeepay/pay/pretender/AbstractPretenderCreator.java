@@ -101,6 +101,8 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
       return pretenderOrder;
     } catch (Exception e) {
       failedTaskExec.execute(() -> saveFailedPretenderOrder(resellerOrder, pretenderAccount));
+      resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>().set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.WAITING_PAY)
+          .eq(ResellerOrder::getId,resellerOrder.getId()));
       throw e;
     }
   }
