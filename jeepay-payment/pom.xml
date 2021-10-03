@@ -128,6 +128,11 @@
         <artifactId>spring-websocket</artifactId>
       </dependency>
 
+        <dependency>
+            <groupId>com.github.rholder</groupId>
+            <artifactId>guava-retrying</artifactId>
+        </dependency>
+
     </dependencies>
 
 

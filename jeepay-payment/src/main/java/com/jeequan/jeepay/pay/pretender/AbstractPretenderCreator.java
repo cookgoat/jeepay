@@ -25,7 +25,6 @@ import com.jeequan.jeepay.service.impl.PretenderAccountService;
 import org.springframework.transaction.annotation.Transactional;
 import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.core.constants.PretenderOrderStatusEnum;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.jeequan.jeepay.service.biz.PretenderAccountUseStatisticsRecorder;
 
 /**
@@ -212,18 +211,24 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
    * @return ResellerOrder
    */
   private ResellerOrder findMatchedResellerOrder(Long chargeAmount, String productType) {
-    ResellerOrder resellerOrder = resellerOrderService
-        .getOne(ResellerOrder.gw().eq(ResellerOrder::getAmount, chargeAmount).
-            eq(ResellerOrder::getProductType, productType)
-            .eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.WAITING_PAY), false);
+    ResellerOrder resellerOrder = resellerOrderService.randomByAmountAndProductType(chargeAmount,productType);
     if (resellerOrder == null) {
       throw new BizException(NO_RESELLER_ORDER);
     }
-    resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>()
-        .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.MATCHING)
-            .set(ResellerOrder::getGmtUpdate,new Date())
-        .eq(ResellerOrder::getId,resellerOrder.getId()));
+    updateResellerOrderToMatch(resellerOrder);
     return resellerOrder;
+  }
+
+  public void updateResellerOrderToMatch(ResellerOrder resellerOrder){
+    ResellerOrder newResellerOrder = new ResellerOrder();
+    newResellerOrder.setVersion(resellerOrder.getVersion());
+    newResellerOrder.setOrderStatus(ResellerOrderStatusEnum.MATCHING.getCode());
+    newResellerOrder.setId(resellerOrder.getId());
+    newResellerOrder.setGmtUpdate(new Date());
+    boolean isSuc = resellerOrderService.updateById(newResellerOrder);
+    if(!isSuc){
+      throw  new BizException(SYS_OPERATION_FAIL_UPDATE);
+    }
   }
 
   public void savePretenderOrder(PretenderOrder pretenderOrder) {

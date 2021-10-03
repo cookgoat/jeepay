@@ -17,6 +17,7 @@
         <result column="gmt_paying_start" property="gmtPayingStart" />
         <result column="gmt_create" property="gmtCreate" />
         <result column="gmt_update" property="gmtUpdate" />
+        <result column="version" property="version" />
     </resultMap>
 
 
@@ -30,7 +31,7 @@
                                         WHERE `order_status`='WAITING_PAY' AND amount= #{amount} AND product_type=#{productType})-(
                                         SELECT MIN(id)
                                         FROM `t_reseller_order`
-                                        WHERE `order_status`='WAITING_PAY' AND amount= #{amount} AND product_type=#{productType})+(
+                                        WHERE `order_status`='WAITING_PAY' AND amount= #{amount} AND product_type=#{productType}))+(
                              SELECT MIN(id)
                              FROM `t_reseller_order`
                              WHERE `order_status`='WAITING_PAY'AND amount= #{amount} AND product_type=#{productType})) AS id) AS t2

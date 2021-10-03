@@ -18,6 +18,7 @@ package com.jeequan.jeepay.mgr.bootstrap;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -81,4 +82,8 @@ public class JeepayMgrApplication {
         return paginationInterceptor;
     }
 
+    @Bean
+    public OptimisticLockerInnerInterceptor optimisticLockerInnerInterceptor(){
+        return new OptimisticLockerInnerInterceptor();
+    }
 }

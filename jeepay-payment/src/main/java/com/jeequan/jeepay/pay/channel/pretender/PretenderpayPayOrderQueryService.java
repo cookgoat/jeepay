@@ -128,19 +128,21 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
   private void doSuccess(ResellerOrder resellerOrder, PretenderOrder pretenderOrder,
       PayOrder payOrder) {
     //update the resellerOrder,reset the status
-    resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>()
-        .set(ResellerOrder::getMatchOutTradeNo, payOrder.getPayOrderId())
-        .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.FINISH.getCode())
-        .set(ResellerOrder::getGmtUpdate, new Date())
-        .eq(ResellerOrder::getId, resellerOrder.getId()));
-
-    pretenderOrderService.update((new LambdaUpdateWrapper<PretenderOrder>()
-        .set(PretenderOrder::getStatus, PretenderOrderStatusEnum.FINISH)
-        .set(PretenderOrder::getGmtUpdate, new Date()))
-        .set(PretenderOrder::getGmtNotify, new Date())
-        .eq(PretenderOrder::getId, pretenderOrder.getId()));
-    pretenderOrder.setStatus(PretenderOrderStatusEnum.FINISH.getCode());
-
+    if(resellerOrder!=null){
+      resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>()
+          .set(ResellerOrder::getMatchOutTradeNo, payOrder.getPayOrderId())
+          .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.FINISH.getCode())
+          .set(ResellerOrder::getGmtUpdate, new Date())
+          .eq(ResellerOrder::getId, resellerOrder.getId()));
+    }
+    if(pretenderOrder!=null){
+      pretenderOrderService.update((new LambdaUpdateWrapper<PretenderOrder>()
+          .set(PretenderOrder::getStatus, PretenderOrderStatusEnum.FINISH)
+          .set(PretenderOrder::getGmtUpdate, new Date()))
+          .set(PretenderOrder::getGmtNotify, new Date())
+          .eq(PretenderOrder::getId, pretenderOrder.getId()));
+      pretenderOrder.setStatus(PretenderOrderStatusEnum.FINISH.getCode());
+    }
   }
 
   protected void doExpireOperation(ResellerOrder resellerOrder, PretenderOrder pretenderOrder) {

@@ -18,6 +18,7 @@ package com.jeequan.jeepay.mch.bootstrap;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -79,6 +80,11 @@ public class JeepayMchApplication {
         // 设置最大单页限制数量，默认 500 条，-1 不受限制
         // paginationInterceptor.setLimit(500);
         return paginationInterceptor;
+    }
+
+    @Bean
+    public OptimisticLockerInnerInterceptor optimisticLockerInnerInterceptor(){
+        return new OptimisticLockerInnerInterceptor();
     }
 
 }

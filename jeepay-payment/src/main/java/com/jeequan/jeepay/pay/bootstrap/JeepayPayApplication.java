@@ -18,6 +18,7 @@ package com.jeequan.jeepay.pay.bootstrap;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.jeequan.jeepay.pay.config.SystemYmlConfig;
 import org.hibernate.validator.HibernateValidator;
 import org.mybatis.spring.annotation.MapperScan;
@@ -118,4 +119,8 @@ public class JeepayPayApplication {
         return new CorsFilter(source);
     }
 
+    @Bean
+    public OptimisticLockerInnerInterceptor optimisticLockerInnerInterceptor(){
+        return new OptimisticLockerInnerInterceptor();
+    }
 }

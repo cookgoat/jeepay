@@ -1,9 +1,5 @@
 package com.jeequan.jeepay.pay.server;
 
-import com.jeequan.jeepay.core.entity.PayOrder;
-import com.jeequan.jeepay.core.utils.AmountUtil;
-import com.jeequan.jeepay.core.utils.JeepayKit;
-import com.jeequan.jeepay.service.impl.PayOrderService;
 import org.slf4j.Logger;
 import java.io.IOException;
 import javax.websocket.OnClose;
@@ -13,11 +9,21 @@ import org.slf4j.LoggerFactory;
 import javax.websocket.Session;
 import javax.websocket.OnMessage;
 import com.alibaba.fastjson.JSON;
+import java.util.concurrent.TimeUnit;
+import com.github.rholder.retry.Retryer;
 import javax.websocket.server.PathParam;
 import org.apache.commons.lang3.StringUtils;
-import com.jeequan.jeepay.core.RetryTemplate;
 import javax.websocket.server.ServerEndpoint;
+import com.github.rholder.retry.RetryException;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.github.rholder.retry.WaitStrategies;
+import com.jeequan.jeepay.core.entity.PayOrder;
+import java.util.concurrent.ExecutionException;
+import com.jeequan.jeepay.core.utils.JeepayKit;
+import com.jeequan.jeepay.core.utils.AmountUtil;
 import org.springframework.stereotype.Controller;
+import com.jeequan.jeepay.service.impl.PayOrderService;
 import com.jeequan.jeepay.pay.channel.PretenderOrderMatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,6 +42,9 @@ public class WsMatchPayOrderServer {
   private static PretenderOrderMatcher pretenderOrderMatcher;
 
   private  static PayOrderService payOrderService;
+
+  Retryer<MatchPayDtaRs> retryer = RetryerBuilder.<MatchPayDtaRs>newBuilder().retryIfException().withWaitStrategy(
+      WaitStrategies.fixedWait(10, TimeUnit.SECONDS)).withStopStrategy(StopStrategies.stopAfterAttempt(3)).build();
 
   @Autowired
   public void setPretenderOrderMatcher(PretenderOrderMatcher pretenderOrderMatcher) {
@@ -83,7 +92,8 @@ public class WsMatchPayOrderServer {
    * 实现服务器主动推送
    */
   @OnMessage
-  public void sendMessage(String message) throws IOException, InterruptedException {
+  public void sendMessage(String message)
+      throws IOException, ExecutionException, RetryException {
     logger.info("WsMatchPayOrderServer accept,message[{}]", message);
     if (StringUtils.isBlank(message)) {
       return;
@@ -96,18 +106,7 @@ public class WsMatchPayOrderServer {
     matchPayDtaRs.setAmount(AmountUtil.convertCent2Dollar(payOrder.getAmount()));
     matchPayDtaRs.setPayType(payOrder.getWayCode());
     session.getBasicRemote().sendText(JSON.toJSONString(matchPayDtaRs));
-    Object ans = new RetryTemplate() {
-      @Override
-      protected Object doBiz() {
-        return pretenderOrderMatcher.matchOrder(message);
-      }
-    }.setRetryTime(3).setSleepTime(10000).execute();
-    if (ans == null) {
-      matchPayDtaRs = new MatchPayDtaRs();
-      matchPayDtaRs.setCode("4009");
-    } else {
-      matchPayDtaRs = (MatchPayDtaRs) ans;
-    }
+    matchPayDtaRs = retryer.call(()-> pretenderOrderMatcher.matchOrder(message));
     session.getBasicRemote().sendText(JSON.toJSONString(matchPayDtaRs));
     session.close();
   }

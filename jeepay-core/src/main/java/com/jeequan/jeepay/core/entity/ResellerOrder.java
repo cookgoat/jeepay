@@ -101,5 +101,10 @@ public class ResellerOrder extends BaseModel implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date gmtUpdate;
 
+    /**
+     * 版本
+     */
+    private Integer version;
+
 
 }

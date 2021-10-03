@@ -18,6 +18,7 @@
         <result column="ext" property="ext" />
         <result column="gmt_create" property="gmtCreate" />
         <result column="gmt_update" property="gmtUpdate" />
+        <result column="version" property="version" />
     </resultMap>
 
 </mapper>

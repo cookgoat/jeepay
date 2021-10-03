@@ -23,11 +23,11 @@ import com.jeequan.jeepay.service.impl.ResellerOrderService;
 import com.jeequan.jeepay.pay.channel.PretenderOrderMatcher;
 import com.jeequan.jeepay.pay.pretender.PretenderOrderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import org.springframework.transaction.annotation.Transactional;
+import static com.jeequan.jeepay.core.constants.ApiCodeEnum.NO_RESELLER_ORDER;
 import com.jeequan.jeepay.core.model.params.prentender.PrentenderpayNormalMchParams;
-
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.SYS_OPERATION_FAIL_CREATE;
 
 @Service
@@ -64,7 +64,7 @@ public class PretenderOrderMatcherImpl implements PretenderOrderMatcher {
     }
     matchPayDtaRs.setPayType(payOrder.getWayCode());
     matchPayDtaRs
-        .setMatchEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 30, 0));
+        .setMatchEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 180, 0));
     matchPayDtaRs.setAmount(AmountUtil.convertCent2Dollar(payOrder.getAmount()));
     matchPayDtaRs.setMchOrderNo(payOrder.getMchOrderNo());
     if (payOrder.getState() == PayOrder.STATE_SUCCESS) {
@@ -95,7 +95,6 @@ public class PretenderOrderMatcherImpl implements PretenderOrderMatcher {
         return matchPayDtaRs;
       }
     }
-
     MchAppConfigContext mchAppConfigContext = configContextService
         .getMchAppConfigContext(payOrder.getMchNo(), payOrder.getAppId());
     PrentenderpayNormalMchParams prentenderpayNormalMchParams = (PrentenderpayNormalMchParams) mchAppConfigContext
@@ -107,7 +106,6 @@ public class PretenderOrderMatcherImpl implements PretenderOrderMatcher {
     baseRq.setChargeAmount(payOrder.getAmount());
     PretenderOrder pretenderOrder = pretenderOrderFactory.getInstance(serviceName)
         .createOrder(baseRq);
-
     matchPayDtaRs.setPayUrl(pretenderOrder.getPayUrl());
     updateResellerOrderToPaying(payOrder, pretenderOrder);
     payOrder.setChannelOrderNo(pretenderOrder.getOutTradeNo());
@@ -122,12 +120,14 @@ public class PretenderOrderMatcherImpl implements PretenderOrderMatcher {
   }
 
   public void updateResellerOrderToPaying(PayOrder payOrder, PretenderOrder pretenderOrder) {
-    boolean isSuccess = resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>()
-        .set(ResellerOrder::getGmtPayingStart, new Date())
-        .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.PAYING.getCode())
-        .set(ResellerOrder::getGmtUpdate, new Date())
-        .set(ResellerOrder::getMatchOutTradeNo, payOrder.getPayOrderId())
-        .eq(ResellerOrder::getOrderNo, pretenderOrder.getMatchResellerOrderNo()));
+    ResellerOrder resellerOrder = queryResellerOrder(pretenderOrder.getMatchResellerOrderNo());
+    ResellerOrder updateParam = new ResellerOrder();
+    updateParam.setGmtPayingStart(new Date());
+    updateParam.setOrderStatus(ResellerOrderStatusEnum.PAYING.getCode());
+    updateParam.setGmtUpdate(new Date());
+    updateParam.setMatchOutTradeNo(payOrder.getPayOrderId());
+    updateParam.setId(resellerOrder.getId());
+    boolean isSuccess = resellerOrderService.updateById(updateParam);
     if (!isSuccess) {
       logger.error(
           "[AbstractPropertyCreditOrderCreator.updateResellerOrderToPaying] failed update resellerOrder failed ,save pretender order failed,pretenderOrder={}",
@@ -136,5 +136,12 @@ public class PretenderOrderMatcherImpl implements PretenderOrderMatcher {
     }
   }
 
+  private ResellerOrder queryResellerOrder(String orderNo) {
+    ResellerOrder resellerOrder = resellerOrderService.getOne(ResellerOrder.gw().eq(ResellerOrder::getOrderNo, orderNo));
+    if (resellerOrder == null) {
+      throw new BizException(NO_RESELLER_ORDER);
+    }
+    return resellerOrder;
+  }
 
 }
