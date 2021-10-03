@@ -45,6 +45,12 @@ public class ResellerFundAccount implements Serializable {
     private String resellerNo;
 
     /**
+     * 核销商名字
+     */
+    @TableField(exist = false)
+    private String resellerName;
+
+    /**
      * 核销商所有订单金额，导入的时候进行增加,单位分
      */
     private Long allAmount;

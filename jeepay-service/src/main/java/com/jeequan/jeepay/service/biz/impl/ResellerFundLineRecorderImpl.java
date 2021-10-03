@@ -183,6 +183,7 @@ public class ResellerFundLineRecorderImpl implements ResellerFundLineRecorder {
     resellerFundAccount.setFinishedAllAmount(calcAmount.getFinishedAllAmount());
     resellerFundAccount.setWaitAllAmount(calcAmount.getWaitAllAmount());
     resellerFundAccount.setShareAllAmount(calcAmount.getShareAllAmount());
+    resellerFundAccount.setGmtUpdate(new Date());
     boolean isSuc = resellerFundAccountService.updateById(resellerFundAccount);
     if (!isSuc) {
       throw new BizException(ApiCodeEnum.SYS_OPERATION_FAIL_CREATE);
