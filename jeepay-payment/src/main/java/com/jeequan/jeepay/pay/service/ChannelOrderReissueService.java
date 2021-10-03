@@ -84,8 +84,10 @@ public class ChannelOrderReissueService {
                 }
             }else if(channelRetMsg.getChannelState() == ChannelRetMsg.ChannelState.CONFIRM_FAIL){  //确认失败
 
+                payOrder.setState(PayOrder.STATE_FAIL);
                 //1. 更新支付订单表为失败状态
                 payOrderService.updateIng2Fail(payOrderId, channelRetMsg.getChannelOrderId(), channelRetMsg.getChannelUserId(), channelRetMsg.getChannelErrCode(), channelRetMsg.getChannelErrMsg());
+                //设置订单状态
                 //发送商户通知
                 payMchNotifyService.payOrderNotify(payOrder);
             }else if(channelRetMsg.getChannelState() == ChannelRetMsg.ChannelState.CANCEL){  //确认取消
