@@ -111,7 +111,7 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
     }
     if (isExpire(resellerOrder)) {
       doExpireOperation(resellerOrder, pretenderOrder);
-      return ChannelRetMsg.confirmFail();
+      return ChannelRetMsg.confirmCancel(queryOrderResult.getData().getOrderNo());
     }
     return ChannelRetMsg.unknown();
   }

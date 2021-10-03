@@ -99,6 +99,11 @@ public class ChannelRetMsg implements Serializable {
         return new ChannelRetMsg(ChannelState.CONFIRM_FAIL, null, null, null);
     }
 
+    /** 明确取消 **/
+    public static ChannelRetMsg confirmCancel(String channelOrderId){
+        return new ChannelRetMsg(ChannelState.CANCEL, channelOrderId, null, null);
+    }
+
     /** 处理中 **/
     public static ChannelRetMsg waiting(){
         return new ChannelRetMsg(ChannelState.WAITING, null, null, null);
