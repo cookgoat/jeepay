@@ -61,7 +61,7 @@ public class ResellerSettleUpServiceImpl implements ResellerSettleUpService {
     resellerFundLineService.save(resellerFundLine);
     resellerOrderService
         .update(new LambdaUpdateWrapper<ResellerOrder>().set(ResellerOrder::getOrderStatus,
-            ResellerOrderStatusEnum.WAITING_PAY).eq(ResellerOrder::getResellerNo, resellerNo)
+            ResellerOrderStatusEnum.WAITING_MATCH).eq(ResellerOrder::getResellerNo, resellerNo)
             .eq(ResellerOrder::getProductType, productType).eq(ResellerOrder::getOrderStatus,
                 ResellerOrderStatusEnum.NULLIFY));
   }

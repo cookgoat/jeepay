@@ -7,7 +7,7 @@ import lombok.Data;
  * @date 2021/9/12
  */
 @Data
-public class FacePrice {
+public class ProductFacePrice {
 
     private Long facePrice;
 

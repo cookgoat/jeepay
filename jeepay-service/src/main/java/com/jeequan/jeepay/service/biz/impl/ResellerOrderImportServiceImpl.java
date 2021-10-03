@@ -143,7 +143,7 @@ public class ResellerOrderImportServiceImpl implements ResellerOrderImportServic
     } else {
       resellerOrder.setChargeAccountType(ResellerOrderChargeAccountType.PLATFORM_ACCOUNT.getCode());
     }
-    resellerOrder.setOrderStatus(ResellerOrderStatusEnum.WAITING_PAY.getCode());
+    resellerOrder.setOrderStatus(ResellerOrderStatusEnum.WAITING_MATCH.getCode());
     return resellerOrder;
   }
 

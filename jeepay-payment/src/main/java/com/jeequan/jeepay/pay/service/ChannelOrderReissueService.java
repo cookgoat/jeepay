@@ -86,7 +86,8 @@ public class ChannelOrderReissueService {
 
                 //1. 更新支付订单表为失败状态
                 payOrderService.updateIng2Fail(payOrderId, channelRetMsg.getChannelOrderId(), channelRetMsg.getChannelUserId(), channelRetMsg.getChannelErrCode(), channelRetMsg.getChannelErrMsg());
-
+                //发送商户通知
+                payMchNotifyService.payOrderNotify(payOrder);
             }else if(channelRetMsg.getChannelState() == ChannelRetMsg.ChannelState.CANCEL){  //确认取消
 
                 //1. 更新支付订单表为失败状态

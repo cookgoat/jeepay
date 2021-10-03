@@ -8,11 +8,13 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum ResellerOrderStatusEnum {
 
-    WAITING_PAY("WAITING_PAY","等待支付"),
+    WAITING_MATCH("WAITING_PAY","待匹配"),
+
+    MATCHING("MATCHING","匹配中"),
 
     PAYING("PAYING","支付中"),
 
-    MATCHING("MATCHING","匹配中"),
+    WAIT_CHARGE("WAIT_CHARGE","待充值"),
 
     NULLIFY("NULLIFY","已经作废"),
 

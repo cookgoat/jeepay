@@ -1,5 +1,7 @@
 package com.jeequan.jeepay.pay.channel.pretender;
 
+import com.jeequan.jeepay.core.constants.ApiCodeEnum;
+import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.pay.rqrs.msg.ChannelRetMsg.ChannelState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +17,7 @@ import com.jeequan.jeepay.service.impl.SysConfigService;
 import com.jeequan.jeepay.pay.model.MchAppConfigContext;
 import com.jeequan.jeepay.pay.rqrs.payorder.UnifiedOrderRQ;
 import com.jeequan.jeepay.pay.rqrs.payorder.CommonPayDataRS;
-import com.jeequan.jeepay.pay.pretender.PretenderOrderFactory;
+import com.jeequan.jeepay.pay.pretender.PretenderOrderCreatorFactory;
 import com.jeequan.jeepay.pay.pretender.PretenderOrderCreator;
 import com.jeequan.jeepay.pay.channel.AbstractPaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +35,7 @@ public class PretendpayPaymentService extends AbstractPaymentService {
   private static final Logger logger = LoggerFactory.getLogger(PretendpayPaymentService.class);
 
   @Autowired
-  private PretenderOrderFactory pretenderOrderFactory;
+  private PretenderOrderCreatorFactory pretenderOrderFactory;
 
   @Autowired
   private SysConfigService sysConfigService;
@@ -67,11 +69,17 @@ public class PretendpayPaymentService extends AbstractPaymentService {
     BaseRq baseRq = new BaseRq();
     baseRq.setChargeAmount(payOrder.getAmount());
     PretenderOrderCreator pretenderOrderCreator = pretenderOrderFactory.getInstance(serviceName);
-    pretenderOrderCreator.hasPretenderAccount(baseRq);
-    pretenderOrderCreator.hasResellerOrder(baseRq);
+    if(!pretenderOrderCreator.hasAvailablePretenderAccount(baseRq)){
+      throw new BizException(ApiCodeEnum.NO_PRETENDER_ACCOUNT);
+
+    }
+    if(!pretenderOrderCreator.hasAvailableResellerOrder(baseRq)){
+      throw new BizException(ApiCodeEnum.NO_RESELLER_ORDER);
+    }
     //放置 响应数据
     CommonPayDataRS commonPayDataRS = new CommonPayDataRS();
-    commonPayDataRS.setPayUrl(sysConfigService.getDBApplicationConfig().genMatchOrderUrl(payOrder.getPayOrderId()));
+    commonPayDataRS.setPayUrl(
+        sysConfigService.getDBApplicationConfig().genMatchOrderUrl(payOrder.getPayOrderId()));
     ChannelRetMsg channelRetMsg = new ChannelRetMsg();
     channelRetMsg.setChannelState(ChannelState.WAITING);
     commonPayDataRS.setChannelRetMsg(channelRetMsg);

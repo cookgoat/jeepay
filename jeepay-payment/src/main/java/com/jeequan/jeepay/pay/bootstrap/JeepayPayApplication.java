@@ -17,9 +17,7 @@ package com.jeequan.jeepay.pay.bootstrap;
 
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
-import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
-import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.jeequan.jeepay.pay.config.SystemYmlConfig;
@@ -83,17 +81,6 @@ public class JeepayPayApplication {
         return new HttpMessageConverters(converter);
     }
 
-    /** Mybatis plus 分页插件 **/
-    @Bean
-    public PaginationInterceptor paginationInterceptor() {
-        PaginationInterceptor paginationInterceptor = new PaginationInterceptor();
-        // 设置请求的页面大于最大页后操作， true调回到首页，false 继续请求  默认false
-        // paginationInterceptor.setOverflow(false);
-        // 设置最大单页限制数量，默认 500 条，-1 不受限制
-        // paginationInterceptor.setLimit(500);
-        return paginationInterceptor;
-    }
-
     /** 默认为 失败快速返回模式 **/
     @Bean
     public Validator validator(){
@@ -130,6 +117,7 @@ public class JeepayPayApplication {
         MybatisPlusInterceptor mybatisPlusInterceptor = new MybatisPlusInterceptor();
         //乐观锁插件
         mybatisPlusInterceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+        mybatisPlusInterceptor.addInnerInterceptor(new PaginationInnerInterceptor());
         return mybatisPlusInterceptor;
     }
 

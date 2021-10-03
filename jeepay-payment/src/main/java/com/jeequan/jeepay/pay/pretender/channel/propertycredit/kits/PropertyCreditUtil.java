@@ -431,10 +431,10 @@ public class PropertyCreditUtil {
       logger.error(
           "[PropertyCreditUtil.queryOrderResult]invoke PropertyCredit failed,queryOrderRequest={},queryOrderResult={}",
           JSON.toJSONString(queryOrderRequest), JSON.toJSONString(queryOrderResult));
-      throw new BizException("PropertyCreditUtil.createOrder failed");
+      throw new BizException("PropertyCreditUtil.queryOrder failed");
     }
     logger.info(
-        "[PropertyCreditUtil.createOrder]invoke PropertyCredit success,queryOrderRequest={},queryOrderResult={}",
+        "[PropertyCreditUtil.queryOrder]invoke PropertyCredit success,queryOrderRequest={},queryOrderResult={}",
         JSON.toJSONString(queryOrderRequest), JSON.toJSONString(queryOrderResult));
     return queryOrderResult;
   }

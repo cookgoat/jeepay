@@ -1,11 +1,11 @@
 package com.jeequan.jeepay.pay.pretender;
 
-import static com.jeequan.jeepay.core.constants.ApiCodeEnum.SYSTEM_ERROR;
 
-import com.jeequan.jeepay.core.exception.BizException;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.jeequan.jeepay.core.exception.BizException;
+import org.springframework.beans.factory.annotation.Autowired;
+import static com.jeequan.jeepay.core.constants.ApiCodeEnum.SYSTEM_ERROR;
 
 
 /**
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
  * @date 2021/9/13
  */
 @Service("pretenderOrderCreatorFactory")
-public class PretenderOrderFactory {
+public class PretenderOrderCreatorFactory {
 
   @Autowired
   private Map<String, PretenderOrderCreator> pretenderOrderCreatorMap;

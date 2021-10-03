@@ -13,7 +13,7 @@ import com.jeequan.jeepay.pay.pretender.AbstractPretenderCreator;
 import com.jeequan.jeepay.pay.pretender.PretenderOrderCreator;
 import com.jeequan.jeepay.core.constants.PretenderOrderStatusEnum;
 import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.rq.GetUserGuide;
-import com.jeequan.jeepay.pay.pretender.model.FacePrice;
+import com.jeequan.jeepay.pay.pretender.model.ProductFacePrice;
 import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.AlipayHelper;
 import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.CS;
 import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.PropertyCreditUtil;
@@ -54,13 +54,13 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
 
   @Override
   protected PretenderOrder doCreateOrder(ResellerOrder resellerOrder,
-      PretenderAccount pretenderAccount, FacePrice facePrice) {
+      PretenderAccount pretenderAccount, ProductFacePrice facePrice) {
     PropertyCreditUtil propertyCreditUtil = new PropertyCreditUtil(getProxy());
     taskExec.submit(() -> doCommonSimulateAction(pretenderAccount, facePrice, propertyCreditUtil));
     return doCreatePretenderOrder(resellerOrder, pretenderAccount, facePrice, propertyCreditUtil);
   }
 
-  private void doCommonSimulateAction(PretenderAccount pretenderAccount, FacePrice facePrice,
+  private void doCommonSimulateAction(PretenderAccount pretenderAccount, ProductFacePrice facePrice,
       PropertyCreditUtil propertyCreditUtil) {
     //request recharge page,just for simulate
     propertyCreditUtil.requestRechargePage();
@@ -80,7 +80,7 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
 
 
   private PretenderOrder doCreatePretenderOrder(ResellerOrder resellerOrder,
-      PretenderAccount pretenderAccount, FacePrice facePrice,
+      PretenderAccount pretenderAccount, ProductFacePrice facePrice,
       PropertyCreditUtil propertyCreditUtil) {
     //create order request
     CreateOrderRequest createOrderRequest = buildCreateOrderRequest(resellerOrder, pretenderAccount,
@@ -107,7 +107,7 @@ public abstract class AbstractPropertyCreditOrderCreator extends AbstractPretend
 
 
   private CreateOrderRequest buildCreateOrderRequest(ResellerOrder resellerOrder,
-      PretenderAccount pretenderAccount, FacePrice facePrice) {
+      PretenderAccount pretenderAccount, ProductFacePrice facePrice) {
     CreateOrderRequest createOrderRequest = new CreateOrderRequest();
     createOrderRequest.setCookie(pretenderAccount.getCertificate());
     createOrderRequest.setGoodsId(facePrice.getGoodsId());

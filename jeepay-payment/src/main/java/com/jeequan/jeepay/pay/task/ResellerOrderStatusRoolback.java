@@ -49,7 +49,7 @@ public class ResellerOrderStatusRoolback {
         }
 
         for(ResellerOrder payOrder: payOrderIPage.getRecords()){
-          resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>().set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.WAITING_PAY)
+          resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>().set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.WAITING_MATCH)
               .eq(ResellerOrder::getId,payOrder.getId()));
         }
 

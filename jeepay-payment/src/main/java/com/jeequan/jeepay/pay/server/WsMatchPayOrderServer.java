@@ -24,7 +24,7 @@ import com.jeequan.jeepay.core.utils.JeepayKit;
 import com.jeequan.jeepay.core.utils.AmountUtil;
 import org.springframework.stereotype.Controller;
 import com.jeequan.jeepay.service.impl.PayOrderService;
-import com.jeequan.jeepay.pay.channel.PretenderOrderMatcher;
+import com.jeequan.jeepay.pay.pretender.match.OrderAssociateMatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @ServerEndpoint("/api/anon/ws/payOrder/{payOrderId}")
@@ -39,15 +39,15 @@ public class WsMatchPayOrderServer {
 
   private Session session;
 
-  private static PretenderOrderMatcher pretenderOrderMatcher;
+  private static OrderAssociateMatcher pretenderOrderMatcher;
 
   private  static PayOrderService payOrderService;
 
   Retryer<MatchPayDtaRs> retryer = RetryerBuilder.<MatchPayDtaRs>newBuilder().retryIfException().withWaitStrategy(
-      WaitStrategies.fixedWait(10, TimeUnit.SECONDS)).withStopStrategy(StopStrategies.stopAfterAttempt(3)).build();
+      WaitStrategies.fixedWait(10, TimeUnit.SECONDS)).withStopStrategy(StopStrategies.stopAfterAttempt(6)).build();
 
   @Autowired
-  public void setPretenderOrderMatcher(PretenderOrderMatcher pretenderOrderMatcher) {
+  public void setPretenderOrderMatcher(OrderAssociateMatcher pretenderOrderMatcher) {
     WsMatchPayOrderServer.pretenderOrderMatcher = pretenderOrderMatcher;
   }
 

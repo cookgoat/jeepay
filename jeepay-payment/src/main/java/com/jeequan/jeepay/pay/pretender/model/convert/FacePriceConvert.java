@@ -2,7 +2,7 @@ package com.jeequan.jeepay.pay.pretender.model.convert;
 
 import com.alibaba.druid.util.StringUtils;
 import com.jeequan.jeepay.core.utils.AmountUtil;
-import com.jeequan.jeepay.pay.pretender.model.FacePrice;
+import com.jeequan.jeepay.pay.pretender.model.ProductFacePrice;
 import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.model.Goods;
 import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.model.GoodsType;
 
@@ -20,22 +20,22 @@ import static com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.CS.IS
 public class FacePriceConvert {
 
 
-    public static List<FacePrice> batchConvertToFacePrice(GoodsType goodsType) {
-        List<FacePrice> facePriceList = new ArrayList<>(5);
+    public static List<ProductFacePrice> batchConvertToFacePrice(GoodsType goodsType) {
+        List<ProductFacePrice> facePriceList = new ArrayList<>(5);
         for (Goods goods : goodsType.getFacePriceList()) {
-            FacePrice facePrice = FacePriceConvert.convertToFacePrice(goodsType, goods);
+            ProductFacePrice facePrice = FacePriceConvert.convertToFacePrice(goodsType, goods);
             facePriceList.add(facePrice);
         }
         if (goodsType.getCustomValue() != null) {
-            FacePrice facePrice = FacePriceConvert.convertToFacePrice(goodsType, goodsType.getCustomValue());
+            ProductFacePrice facePrice = FacePriceConvert.convertToFacePrice(goodsType, goodsType.getCustomValue());
             facePrice.setCustom(true);
             facePriceList.add(facePrice);
         }
         return facePriceList;
     }
 
-    public static FacePrice convertToFacePrice(GoodsType goodsType, Goods goods) {
-        FacePrice facePrice = new FacePrice();
+    public static ProductFacePrice convertToFacePrice(GoodsType goodsType, Goods goods) {
+        ProductFacePrice facePrice = new ProductFacePrice();
         facePrice.setProductCode(goodsType.getBrandId());
         facePrice.setFacePrice(Long.valueOf(AmountUtil.convertDollar2Cent(goods.getFacePrice())));
 

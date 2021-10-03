@@ -1,7 +1,7 @@
 package com.jeequan.jeepay.pay.pretender.channel.propertycredit.creator.jdecard;
 
 import com.jeequan.jeepay.core.constants.ProductTypeEnum;
-import com.jeequan.jeepay.pay.pretender.model.FacePrice;
+import com.jeequan.jeepay.pay.pretender.model.ProductFacePrice;
 import com.jeequan.jeepay.pay.pretender.model.convert.FacePriceConvert;
 import com.jeequan.jeepay.pay.pretender.channel.propertycredit.creator.AbstractPropertyCreditOrderCreator;
 import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.model.GoodsWrapper;
@@ -16,10 +16,10 @@ import java.util.List;
 abstract
 public class PropertyCreditJdeCardOrderCreator extends AbstractPropertyCreditOrderCreator {
 
-    private static final List<FacePrice> jdECardFacePriceList = FacePriceConvert.batchConvertToFacePrice(GoodsWrapper.getJdECardGoodsType());
+    private static final List<ProductFacePrice> jdECardFacePriceList = FacePriceConvert.batchConvertToFacePrice(GoodsWrapper.getJdECardGoodsType());
 
     @Override
-    protected List<FacePrice> getAvailableFacePrice() {
+    protected List<ProductFacePrice> getAvailableFacePrice() {
        return jdECardFacePriceList;
     }
 

@@ -1,6 +1,7 @@
 package com.jeequan.jeepay.pay.channel.pretender;
 
 
+import com.baomidou.mybatisplus.extension.api.R;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -11,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jeequan.jeepay.core.constants.CS;
 import com.jeequan.jeepay.core.constants.PretenderOrderStatusEnum;
@@ -33,6 +33,7 @@ import com.jeequan.jeepay.service.impl.PretenderOrderService;
 import com.jeequan.jeepay.service.biz.ResellerFundLineRecorder;
 import com.jeequan.jeepay.service.impl.PretenderAccountService;
 import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.rs.QueryOrderResult;
+
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.QUERY_PRETENDER_ORDER_FAILED;
 
 /**
@@ -82,7 +83,7 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
     PretenderOrder pretenderOrder = pretenderOrderService
         .getOne(PretenderOrder.gw().eq(PretenderOrder::getOutTradeNo, payOrder.getChannelOrderNo())
             .eq(PretenderOrder::getStatus, PretenderOrderStatusEnum.PAYING), true);
-    if(pretenderOrder==null){
+    if (pretenderOrder == null) {
       return ChannelRetMsg.confirmFail();
     }
     QueryOrderRequest queryOrderRequest = new QueryOrderRequest();
@@ -98,8 +99,8 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
       throw new BizException(QUERY_PRETENDER_ORDER_FAILED);
     }
     String notifyStatus = sysConfigService.getDBApplicationConfig().getPretenderNotifyStatus();
-    if (StringUtils.equalsIgnoreCase(notifyStatus, queryOrderResult.getData().getStatus())||
-        queryOrderResult.getData().isSuccess()  ) {
+    if (StringUtils.equalsIgnoreCase(notifyStatus, queryOrderResult.getData().getStatus()) ||
+        queryOrderResult.getData().isSuccess()) {
       doSuccess(resellerOrder, pretenderOrder, payOrder);
       //todo use mq or thread
       taskExec.execute(() -> resellerFundLineRecorder.record(pretenderOrder));
@@ -117,7 +118,7 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
 
 
   private boolean isExpire(ResellerOrder resellerOrder) {
-    if (resellerOrder == null||resellerOrder.getGmtPayingStart()==null) {
+    if (resellerOrder == null || resellerOrder.getGmtPayingStart() == null) {
       return true;
     }
     return DateUtil.getDistanceMinute(resellerOrder.getGmtPayingStart(), new Date())
@@ -128,20 +129,24 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
   private void doSuccess(ResellerOrder resellerOrder, PretenderOrder pretenderOrder,
       PayOrder payOrder) {
     //update the resellerOrder,reset the status
-    if(resellerOrder!=null){
-      resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>()
-          .set(ResellerOrder::getMatchOutTradeNo, payOrder.getPayOrderId())
-          .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.FINISH.getCode())
-          .set(ResellerOrder::getGmtUpdate, new Date())
-          .eq(ResellerOrder::getId, resellerOrder.getId()));
+    Date now = new Date();
+    if (resellerOrder != null) {
+      ResellerOrder updateResellerParam = new ResellerOrder();
+      updateResellerParam.setMatchOutTradeNo(payOrder.getPayOrderId());
+      updateResellerParam.setOrderStatus(ResellerOrderStatusEnum.FINISH.getCode());
+      updateResellerParam.setGmtUpdate(now);
+      updateResellerParam.setVersion(resellerOrder.getVersion());
+      updateResellerParam.setId(resellerOrder.getId());
+      resellerOrderService.updateById(updateResellerParam);
     }
-    if(pretenderOrder!=null){
-      pretenderOrderService.update((new LambdaUpdateWrapper<PretenderOrder>()
-          .set(PretenderOrder::getStatus, PretenderOrderStatusEnum.FINISH)
-          .set(PretenderOrder::getGmtUpdate, new Date()))
-          .set(PretenderOrder::getGmtNotify, new Date())
-          .eq(PretenderOrder::getId, pretenderOrder.getId()));
-      pretenderOrder.setStatus(PretenderOrderStatusEnum.FINISH.getCode());
+    if (pretenderOrder != null) {
+      PretenderOrder updatePretenderOrderParam = new PretenderOrder();
+      updatePretenderOrderParam.setStatus(PretenderOrderStatusEnum.FINISH.getCode());
+      updatePretenderOrderParam.setGmtUpdate(now);
+      updatePretenderOrderParam.setGmtNotify(now);
+      updatePretenderOrderParam.setVersion(pretenderOrder.getVersion());
+      updatePretenderOrderParam.setId(pretenderOrder.getId());
+      pretenderOrderService.updateById(updatePretenderOrderParam);
     }
   }
 
@@ -149,18 +154,24 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
     //update the resellerOrder,reset the status
     Date now = new Date();
     if (resellerOrder != null) {
-      resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>()
-          .set(ResellerOrder::getMatchOutTradeNo, null)
-          .set(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.WAITING_PAY.getCode())
-          .set(ResellerOrder::getGmtPayingStart, null)
-          .set(ResellerOrder::getGmtUpdate, now)
-          .eq(ResellerOrder::getId, resellerOrder.getId()));
+      ResellerOrder updateResellerParam = new ResellerOrder();
+      updateResellerParam.setVersion(resellerOrder.getVersion());
+      updateResellerParam.setOrderStatus(ResellerOrderStatusEnum.WAITING_MATCH.getCode());
+      updateResellerParam.setGmtPayingStart(null);
+      updateResellerParam.setMatchOutTradeNo(null);
+      updateResellerParam.setGmtUpdate(now);
+      updateResellerParam.setId(resellerOrder.getId());
+      resellerOrderService.updateById(updateResellerParam);
     }
-    pretenderOrderService.update((new LambdaUpdateWrapper<PretenderOrder>()
-        .set(PretenderOrder::getStatus, PretenderOrderStatusEnum.OVER_TIME)
-        .set(PretenderOrder::getGmtUpdate, now)
-        .set(PretenderOrder::getGmtExpired, now))
-        .eq(PretenderOrder::getId, pretenderOrder.getId()));
+    if (pretenderOrder != null) {
+      PretenderOrder updatePretenderOrderParam = new PretenderOrder();
+      updatePretenderOrderParam.setStatus(PretenderOrderStatusEnum.OVER_TIME.getCode());
+      updatePretenderOrderParam.setGmtUpdate(now);
+      updatePretenderOrderParam.setGmtExpired(now);
+      updatePretenderOrderParam.setVersion(pretenderOrder.getVersion());
+      updatePretenderOrderParam.setPretenderAccountId(pretenderOrder.getId());
+      pretenderOrderService.updateById(updatePretenderOrderParam);
+    }
   }
 
 }

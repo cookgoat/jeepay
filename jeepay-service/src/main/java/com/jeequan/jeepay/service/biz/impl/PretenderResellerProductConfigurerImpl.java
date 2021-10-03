@@ -112,12 +112,12 @@ public class PretenderResellerProductConfigurerImpl implements PretenderReseller
     //if close the product for the reseller,close all the reseller's order
     if(StringUtils.equalsIgnoreCase(resellerPretenderProduct.getStatus(),SwitchStatusEnum.ENABLE.getCode())){
       resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>().set(ResellerOrder::getOrderStatus,
-          ResellerOrderStatusEnum.WAITING_PAY).eq(ResellerOrder::getOrderStatus,
+          ResellerOrderStatusEnum.WAITING_MATCH).eq(ResellerOrder::getOrderStatus,
           ResellerOrderStatusEnum.NULLIFY).eq(ResellerOrder::getResellerNo,resellerPretenderProduct.getResellerNo()));
     }else{
       resellerOrderService.update(new LambdaUpdateWrapper<ResellerOrder>().set(ResellerOrder::getOrderStatus,
           ResellerOrderStatusEnum.NULLIFY).eq(ResellerOrder::getOrderStatus,
-          ResellerOrderStatusEnum.WAITING_PAY).eq(ResellerOrder::getResellerNo,resellerPretenderProduct.getResellerNo()));
+          ResellerOrderStatusEnum.WAITING_MATCH).eq(ResellerOrder::getResellerNo,resellerPretenderProduct.getResellerNo()));
     }
   }
 

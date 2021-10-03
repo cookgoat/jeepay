@@ -169,7 +169,7 @@ public class ResellerFundLineRecorderImpl implements ResellerFundLineRecorder {
               ResellerOrderStatusEnum.NULLIFY.getCode())
               .eq(ResellerOrder::getResellerNo, resellerPretenderProduct.getResellerNo())
               .eq(ResellerOrder::getOrderStatus,
-                  ResellerOrderStatusEnum.WAITING_PAY.getCode()));
+                  ResellerOrderStatusEnum.WAITING_MATCH.getCode()));
       resellerPretenderProductService.update(new LambdaUpdateWrapper<ResellerPretenderProduct>()
           .set(ResellerPretenderProduct::getStatus, SwitchStatusEnum.DISABLE.getCode())
           .eq(ResellerPretenderProduct::getId, resellerPretenderProduct.getId()));

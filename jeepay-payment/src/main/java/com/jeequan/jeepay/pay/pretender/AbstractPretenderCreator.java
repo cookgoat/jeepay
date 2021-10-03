@@ -13,18 +13,21 @@ import com.jeequan.jeepay.core.entity.PretenderOrder;
 import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.entity.PretenderAccount;
 import com.jeequan.jeepay.core.model.params.ProxyParams;
-import com.jeequan.jeepay.pay.pretender.model.FacePrice;
 import com.jeequan.jeepay.core.constants.ProductTypeEnum;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
 import com.jeequan.jeepay.pay.pretender.proxy.ProxyIpHunter;
 import com.jeequan.jeepay.service.impl.PretenderOrderService;
+import com.jeequan.jeepay.pay.pretender.model.ProductFacePrice;
+
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.*;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.jeequan.jeepay.service.impl.PretenderAccountService;
 import org.springframework.transaction.annotation.Transactional;
 import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.core.constants.PretenderOrderStatusEnum;
+import com.jeequan.jeepay.core.constants.PretenderAccountStatusEnum;
 import com.jeequan.jeepay.service.biz.PretenderAccountUseStatisticsRecorder;
 
 /**
@@ -83,13 +86,15 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
     //check param
     checkBaseRq(baseRq);
     //first, find the matched charge face price,if is not exist ,throw biz exception
-    FacePrice facePrice = matchTheAvailablePrice(baseRq);
-    // get pretender account
-    PretenderAccount pretenderAccount = findPretenderAccountByBizType(bizType);
-    //get reseller order
-    ResellerOrder resellerOrder = findMatchedResellerOrder(baseRq.getChargeAmount(), productType);
+    ProductFacePrice facePrice = matchTheAvailablePrice(baseRq);
+    // random pretender account
+    PretenderAccount pretenderAccount = randomPretenderAccountByBizType(bizType);
+    //random  reseller order
+    ResellerOrder resellerOrder = randomMatchedResellerOrder(baseRq.getChargeAmount(), productType);
     try {
-      //do concrete create order
+      // update reseller order matching status first,for optimistic lock
+      updateResellerOrderToMatch(resellerOrder);
+      // invoke subclass  do concrete create order
       PretenderOrder pretenderOrder = doCreateOrder(resellerOrder, pretenderAccount, facePrice);
       //save the pretender order
       savePretenderOrder(pretenderOrder);
@@ -107,6 +112,11 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
     }
   }
 
+  /**
+   * check param and invoke the sub creator extendParamCheck
+   *
+   * @param baseRq
+   */
   public void checkBaseRq(BaseRq baseRq) {
     if (baseRq == null ||
         baseRq.getChargeAmount() == null || !extendParamCheck(baseRq)) {
@@ -114,6 +124,12 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
     }
   }
 
+  /**
+   * extend param check for sub creator
+   *
+   * @param baseRq
+   * @return boolean
+   */
   protected abstract boolean extendParamCheck(BaseRq baseRq);
 
   /**
@@ -121,7 +137,7 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
    *
    * @return FacePrice face price
    */
-  protected abstract List<FacePrice> getAvailableFacePrice();
+  protected abstract List<ProductFacePrice> getAvailableFacePrice();
 
   /**
    * get  biz type
@@ -148,7 +164,7 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
    * @return JSONObject
    */
   protected abstract PretenderOrder doCreateOrder(ResellerOrder resellerOrder,
-      PretenderAccount pretenderAccount, FacePrice facePrice);
+      PretenderAccount pretenderAccount, ProductFacePrice facePrice);
 
   /**
    * get the pay way
@@ -168,34 +184,42 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
    * @param baseRq param
    * @return FacePrice
    */
-  private FacePrice matchTheAvailablePrice(BaseRq baseRq) {
-    List<FacePrice> facePriceList = getAvailableFacePrice();
-    Optional<FacePrice> matchedFacePriceOpt = facePriceList.stream()
+  private ProductFacePrice matchTheAvailablePrice(BaseRq baseRq) {
+    List<ProductFacePrice> facePriceList = getAvailableFacePrice();
+    //find match amount product Face Price
+    Optional<ProductFacePrice> matchedFacePriceOpt = facePriceList.stream()
         .filter(facePrice -> facePrice.getFacePrice().equals(baseRq.getChargeAmount())).findAny();
+    //if exist return
     if (matchedFacePriceOpt.isPresent()) {
       return matchedFacePriceOpt.get();
     }
-    Optional<FacePrice> customFacePriceOpt = facePriceList.stream().
-        filter(FacePrice::isCustom).findAny();
+    // has no matched face price,find whether exist custom face price
+    Optional<ProductFacePrice> customFacePriceOpt = facePriceList.stream().
+        filter(ProductFacePrice::isCustom).findAny();
+    //exist custom face price
     if (customFacePriceOpt.isPresent()) {
+      //if charge amount greater than custom face price limit price,throw amount exception
       if (baseRq.getChargeAmount() > customFacePriceOpt.get().getLimitPrice()) {
         throw new BizException(ORDER_CHARGE_AMOUNT_ILLEGAL);
       }
+      return customFacePriceOpt.get();
     }
-    if (!customFacePriceOpt.isPresent()) {
-      throw new BizException(ORDER_CHARGE_AMOUNT_ILLEGAL);
-    }
-    return customFacePriceOpt.get();
+    //no match face price and no custom face price ,throw amount exception
+    throw new BizException(ORDER_CHARGE_AMOUNT_ILLEGAL);
   }
 
   /**
-   * find available pretender account by biz Type
+   * random available pretender account by biz Type
    *
    * @param bizType biz type
    * @return Pretender account
    */
-  private PretenderAccount findPretenderAccountByBizType(String bizType) {
+  private PretenderAccount randomPretenderAccountByBizType(String bizType) {
+    /**
+     * random a pretender account by biz type
+     */
     PretenderAccount pretenderAccount = pretenderAccountService.randomByBizType(bizType);
+    //is no exist,throw NO_PRETENDER_ACCOUNT exception
     if (pretenderAccount == null) {
       throw new BizException(NO_PRETENDER_ACCOUNT);
     }
@@ -203,31 +227,37 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
   }
 
   /**
-   * find matched  reseller order ,if it is not exist ,throw biz exception random find a matched
+   * random matched  reseller order ,if it is not exist ,throw biz exception random find a matched
    * reseller order
    *
    * @param chargeAmount charge amount
    * @param productType  productType
    * @return ResellerOrder
    */
-  private ResellerOrder findMatchedResellerOrder(Long chargeAmount, String productType) {
-    ResellerOrder resellerOrder = resellerOrderService.randomByAmountAndProductType(chargeAmount,productType);
+  private ResellerOrder randomMatchedResellerOrder(Long chargeAmount, String productType) {
+    ResellerOrder resellerOrder = resellerOrderService.randomByAmountAndProductType(chargeAmount,
+        productType);
+    //if reseller order not exist
     if (resellerOrder == null) {
       throw new BizException(NO_RESELLER_ORDER);
     }
-    updateResellerOrderToMatch(resellerOrder);
     return resellerOrder;
   }
 
-  public void updateResellerOrderToMatch(ResellerOrder resellerOrder){
+  /**
+   * update reseller order matching,if you can not update success,throw exception
+   *
+   * @param resellerOrder
+   */
+  public void updateResellerOrderToMatch(ResellerOrder resellerOrder) {
     ResellerOrder newResellerOrder = new ResellerOrder();
     newResellerOrder.setVersion(resellerOrder.getVersion());
     newResellerOrder.setOrderStatus(ResellerOrderStatusEnum.MATCHING.getCode());
     newResellerOrder.setId(resellerOrder.getId());
     newResellerOrder.setGmtUpdate(new Date());
     boolean isSuc = resellerOrderService.updateById(newResellerOrder);
-    if(!isSuc){
-      throw  new BizException(SYS_OPERATION_FAIL_UPDATE);
+    if (!isSuc) {
+      throw new BizException(SYS_OPERATION_FAIL_UPDATE);
     }
   }
 
@@ -263,16 +293,23 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
   }
 
   @Override
-  public boolean hasPretenderAccount(BaseRq baseRq) {
-    PretenderAccount pretenderAccount = findPretenderAccountByBizType(getBizType());
-    return pretenderAccount != null;
+  public boolean hasAvailablePretenderAccount(BaseRq baseRq) {
+    //check whether exist available pretender account
+    int count = pretenderAccountService.count(PretenderAccount.gw().
+        eq(PretenderAccount::getBizType, getBizType()).
+        eq(PretenderAccount::getStatus,
+            PretenderAccountStatusEnum.AVAILABLE.getCode()));
+    return count >= 0;
   }
 
   @Override
-  public boolean hasResellerOrder(BaseRq baseRq) {
-    String productType = getProductTypeEnum().getCode();
-    ResellerOrder resellerOrder = findMatchedResellerOrder(baseRq.getChargeAmount(), productType);
-    return resellerOrder != null;
+  public boolean hasAvailableResellerOrder(BaseRq baseRq) {
+    //check whether exist available reseller order
+    int count = resellerOrderService.count(ResellerOrder.gw().
+        eq(ResellerOrder::getAmount, baseRq.getChargeAmount()).
+        eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.WAITING_MATCH)
+        .eq(ResellerOrder::getProductType, getProductTypeEnum().getCode()));
+    return count >= 0;
   }
 
 }

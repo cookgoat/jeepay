@@ -38,7 +38,9 @@ public class JsoupUtils {
         //请求头设置，特别是cookie设置
         con.header("Accept", ACCEPT_XHTML_XML);
         con.header("User-Agent", UserAgentUtil.randomUserAgent());
-        con.header("Cookie", cookie);
+        if(StringUtils.isNotBlank(cookie)){
+            con.header("Cookie", cookie);
+        }
         con.method(Method.GET);
         //解析请求结果
         Response response = con.execute();

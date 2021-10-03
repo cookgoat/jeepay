@@ -1,18 +1,18 @@
 package com.jeequan.jeepay.pay.pretender.match;
 
+import com.jeequan.jeepay.pay.server.MatchPayDtaRs;
+
 /**
- *
+ * pay order match a pretender order
  * @author axl rose
- *
  */
 public interface OrderAssociateMatcher {
 
-    /**
-     * match a reseller order and return a pay url
-     * @param platformOrderNo platform order no
-     * @param productType 产品类型
-     * @return String Return pay url
-     */
-    String  matchOrder(String platformOrderNo,String productType);
+  /**
+   * Associate a pay order of pretender order
+   * @param orderId
+   * @return MatchPayDtaRs match info
+   */
+  MatchPayDtaRs matchOrder(String orderId);
 
 }
