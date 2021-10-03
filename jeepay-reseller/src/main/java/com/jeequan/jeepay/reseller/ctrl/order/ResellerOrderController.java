@@ -26,7 +26,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -169,7 +168,7 @@ public class ResellerOrderController extends CommonCtrl {
     }
     if (resellerOrder.getAmount() != null) {
       condition.eq(ResellerOrder::getAmount,
-          AmountUtil.convertDollar2Cent(resellerOrder.getAmount() + ""));
+          resellerOrder.getAmount());
     }
     if (StringUtils.isNotBlank(resellerOrder.getQueryFlag())) {
       condition.like(ResellerOrder::getQueryFlag, resellerOrder.getQueryFlag());

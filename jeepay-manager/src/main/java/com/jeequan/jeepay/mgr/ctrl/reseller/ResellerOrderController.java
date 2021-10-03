@@ -62,7 +62,7 @@ public class ResellerOrderController extends CommonCtrl {
     }
     if (resellerOrder.getAmount() != null) {
       condition.eq(ResellerOrder::getAmount,
-          AmountUtil.convertDollar2Cent(resellerOrder.getAmount() + ""));
+          resellerOrder.getAmount());
     }
     if (StringUtils.isNotBlank(resellerOrder.getQueryFlag())) {
       condition.like(ResellerOrder::getQueryFlag, resellerOrder.getQueryFlag());
