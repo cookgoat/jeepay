@@ -17,8 +17,11 @@ package com.jeequan.jeepay.pay.bootstrap;
 
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.jeequan.jeepay.pay.config.SystemYmlConfig;
 import org.hibernate.validator.HibernateValidator;
 import org.mybatis.spring.annotation.MapperScan;
@@ -119,8 +122,15 @@ public class JeepayPayApplication {
         return new CorsFilter(source);
     }
 
+    /**
+     * 新的分页插件,一缓和二缓遵循mybatis的规则,需要设置 MybatisConfiguration#useDeprecatedExecutor = false 避免缓存出现问题(该属性会在旧插件移除后一同移除)
+     */
     @Bean
-    public OptimisticLockerInnerInterceptor optimisticLockerInnerInterceptor(){
-        return new OptimisticLockerInnerInterceptor();
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor mybatisPlusInterceptor = new MybatisPlusInterceptor();
+        //乐观锁插件
+        mybatisPlusInterceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+        return mybatisPlusInterceptor;
     }
+
 }
