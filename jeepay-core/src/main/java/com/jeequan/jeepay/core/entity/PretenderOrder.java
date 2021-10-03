@@ -1,5 +1,6 @@
 package com.jeequan.jeepay.core.entity;
 
+import com.baomidou.mybatisplus.annotation.Version;
 import lombok.Data;
 import java.util.Date;
 import java.io.Serializable;
@@ -114,5 +115,6 @@ public class PretenderOrder implements Serializable {
     /**
      * 版本
      */
+    @Version
     private Integer version;
 }

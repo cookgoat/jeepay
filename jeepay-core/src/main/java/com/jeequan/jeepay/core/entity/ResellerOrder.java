@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jeequan.jeepay.core.model.BaseModel;
 import java.io.Serializable;
@@ -104,6 +105,7 @@ public class ResellerOrder extends BaseModel implements Serializable {
     /**
      * 版本
      */
+    @Version
     private Integer version;
 
 
