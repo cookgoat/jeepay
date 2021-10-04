@@ -8,15 +8,19 @@ import com.jeequan.jeepay.core.constants.ApiCodeEnum;
 import com.jeequan.jeepay.core.constants.ProductTypeEnum;
 import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.core.entity.ResellerOrder;
+import com.jeequan.jeepay.core.entity.SysUser;
 import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.model.ApiRes;
+import com.jeequan.jeepay.core.model.security.JeeUserDetails;
 import com.jeequan.jeepay.core.utils.AmountUtil;
 import com.jeequan.jeepay.core.utils.ExcelUtil;
 import com.jeequan.jeepay.core.utils.FileKit;
 import com.jeequan.jeepay.reseller.ctrl.CommonCtrl;
+import com.jeequan.jeepay.service.biz.ResellerOrderCounter;
 import com.jeequan.jeepay.service.biz.ResellerOrderImportService;
 import com.jeequan.jeepay.service.biz.fileentity.ResellerOrderExportEntity;
 import com.jeequan.jeepay.service.biz.rq.ResellerOrderImportRequest;
+import com.jeequan.jeepay.service.biz.vo.ResellerOrderCountVo;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -45,6 +49,9 @@ public class ResellerOrderController extends CommonCtrl {
 
   @Autowired
   private ResellerOrderService resellerOrderService;
+
+  @Autowired
+  private ResellerOrderCounter resellerOrderCounter;
 
   private static SimpleDateFormat sdf = new SimpleDateFormat(("yyyy-MM-dd HH:mm:ss"));
 
@@ -192,23 +199,25 @@ public class ResellerOrderController extends CommonCtrl {
     }
     condition.orderByDesc(ResellerOrder::getId);
     List<ResellerOrder> resellerOrderList = resellerOrderService.list(condition);
-    if(resellerOrderList.size()>0){
-      ExcelUtil.exportExcel(convertTo(resellerOrderList), "核销订单","核销订单",
-          ResellerOrderExportEntity.class,getToday(new Date())+"-核销订单",httpServletResponse);
+    if (resellerOrderList.size() > 0) {
+      ExcelUtil.exportExcel(convertTo(resellerOrderList), "核销订单", "核销订单",
+          ResellerOrderExportEntity.class, getToday(new Date()) + "-核销订单", httpServletResponse);
     }
   }
 
 
-  List<ResellerOrderExportEntity> convertTo(List<ResellerOrder> resellerOrderList){
+  List<ResellerOrderExportEntity> convertTo(List<ResellerOrder> resellerOrderList) {
     List<ResellerOrderExportEntity> resellerOrderExportEntityList = new ArrayList<>();
-    for(ResellerOrder resellerOrder:resellerOrderList){
+    for (ResellerOrder resellerOrder : resellerOrderList) {
       ResellerOrderExportEntity resellerOrderExportEntity = new ResellerOrderExportEntity();
       resellerOrderExportEntity.setResellerNo(resellerOrder.getResellerNo());
       resellerOrderExportEntity.setOrderNo(resellerOrder.getOrderNo());
-      resellerOrderExportEntity.setOrderStatus(ResellerOrderStatusEnum.getType(resellerOrder.getOrderStatus()).getMsg());
+      resellerOrderExportEntity.setOrderStatus(
+          ResellerOrderStatusEnum.getType(resellerOrder.getOrderStatus()).getMsg());
       resellerOrderExportEntity.setAmount(AmountUtil.convertCent2Dollar(resellerOrder.getAmount()));
       resellerOrderExportEntity.setChargeAccount(resellerOrder.getChargeAccount());
-      resellerOrderExportEntity.setProductType(ProductTypeEnum.getType(resellerOrder.getProductType()).getMsg());
+      resellerOrderExportEntity.setProductType(
+          ProductTypeEnum.getType(resellerOrder.getProductType()).getMsg());
       resellerOrderExportEntity.setGmtCreate(sdf.format(resellerOrder.getGmtCreate()));
       resellerOrderExportEntity.setGmtUpdate(sdf.format(resellerOrder.getGmtUpdate()));
       resellerOrderExportEntityList.add(resellerOrderExportEntity);
@@ -216,10 +225,39 @@ public class ResellerOrderController extends CommonCtrl {
     return resellerOrderExportEntityList;
   }
 
-  public static String getToday(Date time){
+  public static String getToday(Date time) {
     Calendar calendar = Calendar.getInstance();
     calendar.setTime(time);
     return new SimpleDateFormat(("yyyy-MM-dd")).format(calendar.getTime());
+  }
+
+
+  @PreAuthorize("hasAnyAuthority('ENT_RESELLER_ORDER_COUNT_LIST')")
+  @GetMapping(value = "resellerCounterPage")
+  public ApiRes getResellerCounterPage() {
+    ResellerOrder resellerOrder = getObject(ResellerOrder.class);
+    JSONObject paramJSON = getReqParamJSON();
+    JeeUserDetails sysUser =getCurrentUser();
+    resellerOrder.setResellerNo(sysUser.getSysUser().getUserNo());
+    IPage<ResellerOrderCountVo> pages = resellerOrderCounter.getResellerCounterPage(resellerOrder,
+        paramJSON.getString("createdStart"), paramJSON.getString("createdEnd")
+        , getIPage());
+    return ApiRes.page(pages);
+  }
+
+  @PreAuthorize("hasAnyAuthority('ENT_RESELLER_ORDER_EXPORT_COUNT')")
+  @GetMapping(value = "exportResellerCounter")
+  public void exportResellerCounter(HttpServletResponse httpServletResponse) {
+    ResellerOrder resellerOrder = getObject(ResellerOrder.class);
+    JSONObject paramJSON = getReqParamJSON();
+    JeeUserDetails sysUser =getCurrentUser();
+    resellerOrder.setResellerNo(sysUser.getSysUser().getUserNo());
+    List<ResellerOrderCountVo> pages = resellerOrderCounter.getResellerCounterList(resellerOrder,
+        paramJSON.getString("createdStart"), paramJSON.getString("createdEnd"));
+    if (pages.size() > 0) {
+      ExcelUtil.exportExcel(pages, "核销订单报表统计", "核销订单报表统计",
+          ResellerOrderCountVo.class, getToday(new Date()) + "-核销订单报表统计", httpServletResponse);
+    }
   }
 
 

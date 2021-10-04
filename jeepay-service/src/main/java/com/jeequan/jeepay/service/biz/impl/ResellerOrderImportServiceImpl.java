@@ -113,17 +113,7 @@ public class ResellerOrderImportServiceImpl implements ResellerOrderImportServic
     Reseller reseller = queryReseller(resellerImportRequest);
     ResellerOrder resellerOrder = new ResellerOrder();
     resellerOrder.setResellerNo(reseller.getResellerNo());
-
-    if (StringUtils.isBlank(resellerOrderBaseExcelFileEntity.getOrderNo())) {
-      resellerOrder.setOrderNo(generateOrderNo());
-    } else {
-      int count = resellerOrderService.count(ResellerOrder.gw()
-          .eq(ResellerOrder::getOrderNo, resellerOrderBaseExcelFileEntity.getOrderNo()));
-      if (count > 0) {
-        return null;
-      }
-      resellerOrder.setOrderNo(resellerOrderBaseExcelFileEntity.getOrderNo());
-    }
+    resellerOrder.setOrderNo(generateOrderNo());
     if (StringUtils.isBlank(resellerOrderBaseExcelFileEntity.getAmount()) || !isInteger(
         resellerOrderBaseExcelFileEntity.getAmount())) {
       return null;
@@ -144,6 +134,7 @@ public class ResellerOrderImportServiceImpl implements ResellerOrderImportServic
       resellerOrder.setChargeAccountType(ResellerOrderChargeAccountType.PLATFORM_ACCOUNT.getCode());
     }
     resellerOrder.setOrderStatus(ResellerOrderStatusEnum.WAITING_MATCH.getCode());
+    resellerOrder.setQueryFlag(resellerOrderBaseExcelFileEntity.getQueryFlag());
     return resellerOrder;
   }
 
@@ -235,6 +226,5 @@ public class ResellerOrderImportServiceImpl implements ResellerOrderImportServic
       throw new BizException(ApiCodeEnum.SYS_OPERATION_FAIL_UPDATE);
     }
   }
-
 
 }

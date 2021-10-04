@@ -21,7 +21,7 @@ spring:
       number_format: '#' #数字格式进行原样显示，不加格式化字符例如  100,00
   datasource:
     # yml填写url连接串， 无需将&符号进行转义
-    url: jdbc:mysql://154.86.128.93:3306/jeepaydb?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://154.86.128.93:3306/jeepaydb-dev?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: asdf!A123@
     druid:
