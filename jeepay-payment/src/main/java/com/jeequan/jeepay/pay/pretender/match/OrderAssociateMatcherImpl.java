@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.pay.pretender.PretenderOrderCreatorFactory;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.NO_RESELLER_ORDER;
 
@@ -34,7 +33,7 @@ import com.jeequan.jeepay.core.model.params.prentender.PrentenderpayNormalMchPar
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.SYS_OPERATION_FAIL_CREATE;
 
 /**
- * @author  axl rose
+ * @author axl rose
  */
 @Service
 public class OrderAssociateMatcherImpl implements OrderAssociateMatcher {
@@ -114,18 +113,17 @@ public class OrderAssociateMatcherImpl implements OrderAssociateMatcher {
       return matchPayDtaRs;
     }
     // if pay order is STATE_ING,and exist PAYING reseller order,return to  exist matching pay url
-    if (payOrder.getState() == PayOrder.STATE_ING) {
-      PretenderOrder pretenderOrder = pretenderOrderService.getOne(PretenderOrder.gw()
-          .eq(PretenderOrder::getOutTradeNo, payOrder.getChannelOrderNo()));
-      int count = resellerOrderService.count(
-          ResellerOrder.gw().eq(ResellerOrder::getMatchOutTradeNo, payOrder.getPayOrderId())
-              .eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.PAYING.getCode()));
-      if (pretenderOrder != null && count > 0) {
-        matchPayDtaRs.setCode("4004");
-        matchPayDtaRs.setPayUrl(pretenderOrder.getPayUrl());
-        return matchPayDtaRs;
-      }
+    PretenderOrder pretenderOrder = pretenderOrderService.getOne(PretenderOrder.gw()
+        .eq(PretenderOrder::getOutTradeNo, payOrder.getChannelOrderNo()));
+    int count = resellerOrderService.count(
+        ResellerOrder.gw().eq(ResellerOrder::getMatchOutTradeNo, payOrder.getPayOrderId())
+            .eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.PAYING.getCode()));
+    if (pretenderOrder != null && count > 0) {
+      matchPayDtaRs.setCode("4004");
+      matchPayDtaRs.setPayUrl(pretenderOrder.getPayUrl());
+      return matchPayDtaRs;
     }
+
     //if is STATE_ING but did not match any,this is first match pay url action
     //get the pay app config context by pay order's appid
     MchAppConfigContext mchAppConfigContext = configContextService
@@ -146,7 +144,7 @@ public class OrderAssociateMatcherImpl implements OrderAssociateMatcher {
     /**
      *get  pretenderOrderCreator by pretenderPayBizType,and invoke ,get a success pretender order
      */
-    PretenderOrder pretenderOrder = pretenderOrderCreatorFactory.getInstance(pretenderPayBizType)
+     pretenderOrder = pretenderOrderCreatorFactory.getInstance(pretenderPayBizType)
         .createOrder(baseRq);
     //set payUrl from pretenderOrder
     matchPayDtaRs.setPayUrl(pretenderOrder.getPayUrl());
@@ -175,7 +173,10 @@ public class OrderAssociateMatcherImpl implements OrderAssociateMatcher {
     updatePayOrderParam.setChannelOrderNo(pretenderOrder.getOutTradeNo());
     updatePayOrderParam.setResellerOrderNo(pretenderOrder.getMatchResellerOrderNo());
     updatePayOrderParam.setPayOrderId(payOrder.getPayOrderId());
-    payOrderService.updateById(updatePayOrderParam);
+    boolean isSuc = payOrderService.updateById(updatePayOrderParam);
+    if(!isSuc){
+     throw  new BizException("match failed");
+    }
   }
 
   private void setPayOrderCommonInfo(MatchPayDtaRs matchPayDtaRs, PayOrder payOrder) {
@@ -207,6 +208,7 @@ public class OrderAssociateMatcherImpl implements OrderAssociateMatcher {
 
   /**
    * query reseller order
+   *
    * @param orderNo reseller orderno
    * @return ResellerOrder
    */
