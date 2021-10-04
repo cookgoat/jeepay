@@ -17,17 +17,16 @@ import com.jeequan.jeepay.core.constants.ProductTypeEnum;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
 import com.jeequan.jeepay.pay.pretender.proxy.ProxyIpHunter;
 import com.jeequan.jeepay.service.impl.PretenderOrderService;
-import com.jeequan.jeepay.pay.pretender.model.ProductFacePrice;
-
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.*;
-
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.jeequan.jeepay.pay.pretender.model.ProductFacePrice;
 import com.jeequan.jeepay.service.impl.PretenderAccountService;
 import org.springframework.transaction.annotation.Transactional;
 import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.core.constants.PretenderOrderStatusEnum;
 import com.jeequan.jeepay.core.constants.PretenderAccountStatusEnum;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jeequan.jeepay.service.biz.PretenderAccountUseStatisticsRecorder;
 
 /**
@@ -235,6 +234,10 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
    * @return ResellerOrder
    */
   private ResellerOrder randomMatchedResellerOrder(Long chargeAmount, String productType) {
+    ResellerOrder sleepOrder = querySleepingResellerOrder();
+    if (sleepOrder != null) {
+      return sleepOrder;
+    }
     ResellerOrder resellerOrder = resellerOrderService.randomByAmountAndProductType(chargeAmount,
         productType);
     //if reseller order not exist
@@ -242,6 +245,24 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
       throw new BizException(NO_RESELLER_ORDER);
     }
     return resellerOrder;
+  }
+
+  /**
+   * query sleeping reseller order
+   *
+   * @return ResellerOrder
+   */
+  private ResellerOrder querySleepingResellerOrder() {
+    //当前时间 减去1分钟。
+    Date offsetDate = cn.hutool.core.date.DateUtil.offsetMinute(new Date(), -35);
+    //查询条件： 支付中的订单 & （ 订单创建时间 + 1分钟 >= 当前时间 ）
+    LambdaQueryWrapper<ResellerOrder> lambdaQueryWrapper = ResellerOrder.gw()
+        .eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.SLEEP)
+        .le(ResellerOrder::getGmtUpdate, offsetDate);
+    lambdaQueryWrapper.last("limit 1");
+    lambdaQueryWrapper.orderByDesc(ResellerOrder::getGmtUpdate);
+    ResellerOrder sleepResellerOrder = resellerOrderService.getOne(lambdaQueryWrapper);
+    return sleepResellerOrder;
   }
 
   /**

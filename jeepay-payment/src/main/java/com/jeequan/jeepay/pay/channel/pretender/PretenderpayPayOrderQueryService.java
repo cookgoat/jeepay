@@ -22,16 +22,16 @@ import com.jeequan.jeepay.core.entity.ResellerOrder;
 import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.utils.DateUtil;
 import com.jeequan.jeepay.pay.channel.IPayOrderQueryService;
-import com.jeequan.jeepay.pay.model.MchAppConfigContext;
-import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.PropertyCreditUtil;
-import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.rq.QueryOrderRequest;
 import com.jeequan.jeepay.pay.rqrs.msg.ChannelRetMsg;
 import com.jeequan.jeepay.service.impl.SysConfigService;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
 import com.jeequan.jeepay.service.impl.PretenderOrderService;
+import com.jeequan.jeepay.pay.model.MchAppConfigContext;
 import com.jeequan.jeepay.service.biz.ResellerFundLineRecorder;
 import com.jeequan.jeepay.service.impl.PretenderAccountService;
+import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.PropertyCreditUtil;
 import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.rs.QueryOrderResult;
+import com.jeequan.jeepay.pay.pretender.channel.propertycredit.kits.rq.QueryOrderRequest;
 
 import static com.jeequan.jeepay.core.constants.ApiCodeEnum.QUERY_PRETENDER_ORDER_FAILED;
 
@@ -74,17 +74,18 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
 
   @Override
   @Transactional(rollbackFor = Exception.class)
-  public ChannelRetMsg query(PayOrder payOrder, MchAppConfigContext mchAppConfigContext)
-      throws Exception {
-    ResellerOrder resellerOrder = resellerOrderService
-        .getOne(ResellerOrder.gw().eq(ResellerOrder::getMatchOutTradeNo, payOrder.getPayOrderId())
-            .eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.PAYING), true);
+  public ChannelRetMsg query(PayOrder payOrder, MchAppConfigContext mchAppConfigContext) {
+
     PretenderOrder pretenderOrder = pretenderOrderService
         .getOne(PretenderOrder.gw().eq(PretenderOrder::getOutTradeNo, payOrder.getChannelOrderNo())
             .eq(PretenderOrder::getStatus, PretenderOrderStatusEnum.PAYING), true);
     if (pretenderOrder == null) {
       return ChannelRetMsg.confirmFail();
     }
+    ResellerOrder resellerOrder = resellerOrderService
+        .getOne(ResellerOrder.gw()
+            .eq(ResellerOrder::getOrderNo, pretenderOrder.getMatchResellerOrderNo())
+            .eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.PAYING), true);
     QueryOrderRequest queryOrderRequest = new QueryOrderRequest();
     queryOrderRequest.setOrderNo(pretenderOrder.getOutTradeNo());
     PretenderAccount pretenderAccount = pretenderAccountService.getOne(
@@ -155,7 +156,7 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
     if (resellerOrder != null) {
       ResellerOrder updateResellerParam = new ResellerOrder();
       updateResellerParam.setVersion(resellerOrder.getVersion());
-      updateResellerParam.setOrderStatus(ResellerOrderStatusEnum.WAITING_MATCH.getCode());
+      updateResellerParam.setOrderStatus(ResellerOrderStatusEnum.SLEEP.getCode());
       updateResellerParam.setGmtPayingStart(null);
       updateResellerParam.setMatchOutTradeNo(null);
       updateResellerParam.setGmtUpdate(now);
@@ -172,5 +173,6 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
       pretenderOrderService.updateById(updatePretenderOrderParam);
     }
   }
+
 
 }

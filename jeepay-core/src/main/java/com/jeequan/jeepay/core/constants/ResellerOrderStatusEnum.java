@@ -14,6 +14,8 @@ public enum ResellerOrderStatusEnum {
 
     PAYING("PAYING","支付中"),
 
+    SLEEP("SLEEP","休眠"),
+
     WAIT_CHARGE("WAIT_CHARGE","待充值"),
 
     NULLIFY("NULLIFY","已经作废"),
