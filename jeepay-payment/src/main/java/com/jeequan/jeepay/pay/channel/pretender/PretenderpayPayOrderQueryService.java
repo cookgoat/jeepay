@@ -1,7 +1,6 @@
 package com.jeequan.jeepay.pay.channel.pretender;
 
 
-import com.baomidou.mybatisplus.extension.api.R;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;

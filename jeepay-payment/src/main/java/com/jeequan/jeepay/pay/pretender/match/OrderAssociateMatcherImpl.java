@@ -169,11 +169,13 @@ public class OrderAssociateMatcherImpl implements OrderAssociateMatcher {
    */
   private void updateChannelOrderAndResellerOrderNo(PayOrder payOrder,
       PretenderOrder pretenderOrder) {
+    PayOrder updatePayOrderParam = new PayOrder();
     payOrder.setChannelOrderNo(pretenderOrder.getOutTradeNo());
-    payOrderService.update(new LambdaUpdateWrapper<PayOrder>()
-        .set(PayOrder::getChannelOrderNo, pretenderOrder.getOutTradeNo())
-        .set(PayOrder::getResellerOrderNo, pretenderOrder.getMatchResellerOrderNo())
-        .eq(PayOrder::getPayOrderId, payOrder.getPayOrderId()));
+    updatePayOrderParam.setVersion(payOrder.getVersion());
+    updatePayOrderParam.setChannelOrderNo(pretenderOrder.getOutTradeNo());
+    updatePayOrderParam.setResellerOrderNo(pretenderOrder.getMatchResellerOrderNo());
+    updatePayOrderParam.setPayOrderId(payOrder.getPayOrderId());
+    payOrderService.updateById(updatePayOrderParam);
   }
 
   private void setPayOrderCommonInfo(MatchPayDtaRs matchPayDtaRs, PayOrder payOrder) {

@@ -17,6 +17,7 @@ package com.jeequan.jeepay.core.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jeequan.jeepay.core.model.BaseModel;
 import lombok.Data;
@@ -256,5 +257,11 @@ public class PayOrder extends BaseModel implements Serializable {
      * 核销商订单
      */
     private String resellerOrderNo;
+
+    /**
+     * 版本
+     */
+    @Version
+    private Integer version;
 
 }

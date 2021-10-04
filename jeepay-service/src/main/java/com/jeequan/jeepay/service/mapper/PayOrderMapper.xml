@@ -41,6 +41,7 @@
         <result column="created_at" property="createdAt" />
         <result column="updated_at" property="updatedAt" />
         <result column="gmt_expired" property="gmtExpired" />
+        <result column="version" property="version" />
     </resultMap>
 
     <!--交易统计-->
