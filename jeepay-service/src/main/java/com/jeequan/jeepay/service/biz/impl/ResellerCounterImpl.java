@@ -288,10 +288,10 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
       queryWrapper.eq("order_status", status);
     }
     if (StringUtils.isNotBlank(startDay)) {
-      queryWrapper.le("gmt_create", startDay);
+      queryWrapper.ge("gmt_create", startDay);
     }
     if (StringUtils.isNotBlank(endDay)) {
-      queryWrapper.ge("gmt_create", endDay);
+      queryWrapper.le("gmt_create", endDay);
     }
     if (StringUtils.isNotBlank(resellerNo)) {
       queryWrapper.eq("reseller_no", resellerNo);
@@ -315,7 +315,7 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
         resellerSimpleCountVo.setAmount(((Long) amountObj));
       }
       if (allAmountObj != null) {
-        resellerSimpleCountVo.setAllAmount(((Long) amountObj));
+        resellerSimpleCountVo.setAllAmount((((BigDecimal) allAmountObj).longValue()));
       }
       if (allCountObj != null) {
         resellerSimpleCountVo.setAllCount((Long) allCountObj);
@@ -331,10 +331,10 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
     queryWrapper.select("reseller_no resellerNo");
 
     if (StringUtils.isNotBlank(startDay)) {
-      queryWrapper.le("gmt_create", startDay);
+      queryWrapper.ge("gmt_create", startDay);
     }
     if (StringUtils.isNotBlank(endDay)) {
-      queryWrapper.ge("gmt_create", endDay);
+      queryWrapper.le("gmt_create", endDay);
     }
     if (StringUtils.isNotBlank(resellerNo)) {
       queryWrapper.eq("reseller_no", resellerNo);
@@ -359,7 +359,10 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
       Long finishAmount = queryResellerAmount(ResellerOrderStatusEnum.FINISH.getCode(),tempResellerNo,startDay,endDay);
       resellerOrderFundOverallView.setAllFinishAmount(finishAmount);
       ResellerPretenderProduct resellerPretenderProduct = resellerPretenderProductService.getOne(ResellerPretenderProduct.gw().eq(ResellerPretenderProduct::getResellerNo,tempResellerNo));
-      resellerOrderFundOverallView.setAllReturnedAmount(finishAmount*resellerPretenderProduct.getFeeRate().longValue());
+      if(resellerPretenderProduct!=null){
+        Long allReturnedAmount= resellerPretenderProduct.getFeeRate().multiply(new BigDecimal(finishAmount)).longValue();
+        resellerOrderFundOverallView.setAllReturnedAmount(allReturnedAmount);
+      }
       Long sleepAmount = queryResellerAmount(ResellerOrderStatusEnum.SLEEP.getCode(),tempResellerNo,startDay,endDay);
       resellerOrderFundOverallView.setAllSleepAmount(sleepAmount);
       Long allAmount = queryResellerAmount(null,tempResellerNo,startDay,endDay);
@@ -371,12 +374,12 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
 
   private Long queryResellerAmount(String status,String resellerNo,String startDate,String endDate){
     QueryWrapper<ResellerOrder> queryWrapper = new QueryWrapper<>();
-    queryWrapper.select("ifnull(sum(amount),0)as amount,reseller");
+    queryWrapper.select("ifnull(sum(amount),0)as amount");
     if (StringUtils.isNotBlank(startDate)) {
-      queryWrapper.le("gmt_create", startDate);
+      queryWrapper.ge("gmt_create", startDate);
     }
     if (StringUtils.isNotBlank(endDate)) {
-      queryWrapper.ge("gmt_create", endDate);
+      queryWrapper.le("gmt_create", endDate);
     }
     if (StringUtils.isNotBlank(resellerNo)) {
       queryWrapper.eq("reseller_no", resellerNo);
@@ -392,7 +395,7 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
     if(amountObj==null){
       return  0L;
     }
-    Long amount = (Long) map.get("amount");
+    Long amount = ((BigDecimal) map.get("amount")).longValue();
     return  amount;
   }
 

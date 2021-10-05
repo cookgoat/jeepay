@@ -10,10 +10,10 @@ import lombok.Data;
 public class ResellerOrderFundOverallView {
    private String resellerNo;
    private String resellerName;
-   private Long allOrderAmount;
-   private Long allWaitAmount;
-   private Long allFinishAmount;
-   private Long allReturnedAmount;
-   private Long allPayAmount;
-   private Long allSleepAmount;
+   private Long allOrderAmount=0L;
+   private Long allWaitAmount=0L;
+   private Long allFinishAmount=0L;
+   private Long allReturnedAmount=0L;
+   private Long allPayAmount=0L;
+   private Long allSleepAmount=0L;
 }

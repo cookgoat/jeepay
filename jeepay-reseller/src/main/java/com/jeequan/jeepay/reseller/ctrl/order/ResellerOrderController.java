@@ -20,6 +20,7 @@ import com.jeequan.jeepay.service.biz.ResellerOrderImportService;
 import com.jeequan.jeepay.service.biz.fileentity.ResellerOrderExportEntity;
 import com.jeequan.jeepay.service.biz.rq.ResellerOrderImportRequest;
 import com.jeequan.jeepay.service.biz.vo.ResellerOrderCountVo;
+import com.jeequan.jeepay.service.biz.vo.ResellerOrderFundOverallView;
 import com.jeequan.jeepay.service.biz.vo.ResellerOrderOverallView;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
 import java.text.SimpleDateFormat;
@@ -237,7 +238,7 @@ public class ResellerOrderController extends CommonCtrl {
   public ApiRes getResellerCounterPage() {
     ResellerOrder resellerOrder = getObject(ResellerOrder.class);
     JSONObject paramJSON = getReqParamJSON();
-    JeeUserDetails sysUser =getCurrentUser();
+    JeeUserDetails sysUser = getCurrentUser();
     resellerOrder.setResellerNo(sysUser.getSysUser().getUserNo());
     IPage<ResellerOrderCountVo> pages = resellerOrderCounter.getResellerCounterPage(resellerOrder,
         paramJSON.getString("createdStart"), paramJSON.getString("createdEnd")
@@ -250,7 +251,7 @@ public class ResellerOrderController extends CommonCtrl {
   public void exportResellerCounter(HttpServletResponse httpServletResponse) {
     ResellerOrder resellerOrder = getObject(ResellerOrder.class);
     JSONObject paramJSON = getReqParamJSON();
-    JeeUserDetails sysUser =getCurrentUser();
+    JeeUserDetails sysUser = getCurrentUser();
     resellerOrder.setResellerNo(sysUser.getSysUser().getUserNo());
     List<ResellerOrderCountVo> pages = resellerOrderCounter.getResellerCounterList(resellerOrder,
         paramJSON.getString("createdStart"), paramJSON.getString("createdEnd"));
@@ -264,11 +265,48 @@ public class ResellerOrderController extends CommonCtrl {
   @GetMapping(value = "overallResellerCount")
   public ApiRes overallResellerCount() {
     ResellerOrder resellerOrder = getObject(ResellerOrder.class);
-    JSONObject paramJSON = getReqParamJSON();
-    JeeUserDetails sysUser =getCurrentUser();
+    JeeUserDetails sysUser = getCurrentUser();
+    Date now = new Date();
     resellerOrder.setResellerNo(sysUser.getSysUser().getUserNo());
-    List<ResellerOrderOverallView> resellerOrderOverallViewList =resellerOrderCounter.countOverallView(resellerOrder, paramJSON.getString("createdStart"), paramJSON.getString("createdEnd"));
-    return  ApiRes.ok(resellerOrderOverallViewList);
+    List<ResellerOrderOverallView> resellerOrderOverallViewList = resellerOrderCounter
+        .countOverallView(resellerOrder, getStartOfDay(now), getEndOfDay(now));
+    return ApiRes.ok(resellerOrderOverallViewList);
+  }
+
+
+  @PreAuthorize("hasAnyAuthority('ENT_RESELLER_ORDER_OVERALL_COUNT')")
+  @GetMapping(value = "orderFundOverallView")
+  public ApiRes orderFundOverallView() {
+    ResellerOrder resellerOrder = getObject(ResellerOrder.class);
+    JeeUserDetails sysUser = getCurrentUser();
+    resellerOrder.setResellerNo(sysUser.getSysUser().getUserNo());
+    Date now = new Date();
+    List<ResellerOrderFundOverallView> resellerOrderOverallViewList = resellerOrderCounter
+        .countReSellerOrderFundByReseller(getStartOfDay(now), getEndOfDay(now),
+            resellerOrder.getResellerNo());
+
+    return ApiRes.ok(resellerOrderOverallViewList.get(0));
+  }
+
+
+  public static String getStartOfDay(Date time) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(time);
+    calendar.set(Calendar.HOUR_OF_DAY, 0);
+    calendar.set(Calendar.MINUTE, 0);
+    calendar.set(Calendar.SECOND, 0);
+    calendar.set(Calendar.MILLISECOND, 0);
+    return new SimpleDateFormat(("yyyy-MM-dd HH:mm:ss")).format(calendar.getTime());
+  }
+
+  public static String getEndOfDay(Date time) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(time);
+    calendar.set(Calendar.HOUR_OF_DAY, 23);
+    calendar.set(Calendar.MINUTE, 59);
+    calendar.set(Calendar.SECOND, 59);
+    calendar.set(Calendar.MILLISECOND, 999);
+    return new SimpleDateFormat(("yyyy-MM-dd HH:mm:ss")).format(calendar.getTime());
   }
 
 
