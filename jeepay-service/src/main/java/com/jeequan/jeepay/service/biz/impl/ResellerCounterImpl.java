@@ -6,13 +6,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jeequan.jeepay.core.constants.ProductTypeEnum;
 import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.core.entity.SysUser;
+import com.jeequan.jeepay.core.utils.AmountUtil;
+import com.jeequan.jeepay.service.biz.vo.ResellerOrderOverallView;
+import com.jeequan.jeepay.service.biz.vo.ResellerSimpleCountVo;
 import com.jeequan.jeepay.service.impl.SysUserService;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Handler;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -105,11 +107,11 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
         resellerOrderCountVo.setResellerName(sysUser.getRealname());
         long totalAmount = queryOrderAllAmount(resellerOrder,
             resellerOrderCountVo.getChargeAccount(), null, resellerOrderCountVo.getProductType(),
-            startDate, endDate,resellerOrderCountVo.getQueryFlag());
+            startDate, endDate, resellerOrderCountVo.getQueryFlag());
         long totalFinishAmount = queryOrderAllAmount(resellerOrder,
             resellerOrderCountVo.getChargeAccount(),
             ResellerOrderStatusEnum.FINISH.getCode(), resellerOrderCountVo.getProductType(),
-            startDate, endDate,resellerOrderCountVo.getQueryFlag());
+            startDate, endDate, resellerOrderCountVo.getQueryFlag());
         resellerOrderCountVo.setOrderAllAmount(totalAmount);
         resellerOrderCountVo.setFinishAllAmount(totalFinishAmount);
         if (resellerOrderCountVo.getFinishAllAmount() >= resellerOrderCountVo.getOrderAllAmount()) {
@@ -124,7 +126,7 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
   }
 
   private Long queryOrderAllAmount(ResellerOrder resellerOrder, String chargeAccount, String status,
-      String productType, String startDate, String endDate,String queryFlag) {
+      String productType, String startDate, String endDate, String queryFlag) {
     QueryWrapper<ResellerOrder> queryWrapper = new QueryWrapper<>();
     queryWrapper.select("ifnull(sum(amount),0) as total");
     queryWrapper.eq("product_type", productType);
@@ -190,6 +192,132 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
     }
     setResellerName(resellerOrderCountVoList, resellerOrder, startDay, endDay);
     return resellerOrderCountVoList;
+  }
+
+  @Override
+  public List<ResellerOrderOverallView> countOverallView(ResellerOrder resellerOrder,
+      String startDay,
+      String endDay) {
+    //query all count reseller oder count
+    List<ResellerSimpleCountVo> allResellerCountVo = countResellerSimpleCountVoByAmount(null,
+        startDay, endDay, resellerOrder.getResellerNo());
+    List<ResellerSimpleCountVo> allWaitResellerCountVo = countResellerSimpleCountVoByAmount(
+        ResellerOrderStatusEnum.WAIT_CHARGE.getCode(), startDay,
+        endDay, resellerOrder.getResellerNo());
+    List<ResellerSimpleCountVo> allPayResellerCountVo = countResellerSimpleCountVoByAmount(
+        ResellerOrderStatusEnum.PAYING.getCode(), startDay, endDay, resellerOrder.getResellerNo());
+    List<ResellerSimpleCountVo> allFinishResellerCountVo = countResellerSimpleCountVoByAmount(
+        ResellerOrderStatusEnum.FINISH.getCode(), startDay, endDay, resellerOrder.getResellerNo());
+    List<ResellerSimpleCountVo> allSleepResellerCountVo = countResellerSimpleCountVoByAmount(
+        ResellerOrderStatusEnum.SLEEP.getCode(), startDay, endDay, resellerOrder.getResellerNo());
+    Map<Long, List<ResellerSimpleCountVo>> allWaitResellerCountVoMap = allWaitResellerCountVo.stream()
+        .collect(Collectors.groupingBy(ResellerSimpleCountVo::getAmount));
+    Map<Long, List<ResellerSimpleCountVo>> allPayResellerCountVoMap = allPayResellerCountVo.stream()
+        .collect(Collectors.groupingBy(ResellerSimpleCountVo::getAmount));
+    Map<Long, List<ResellerSimpleCountVo>> allFinishResellerCountVoMap = allFinishResellerCountVo.stream()
+        .collect(Collectors.groupingBy(ResellerSimpleCountVo::getAmount));
+    Map<Long, List<ResellerSimpleCountVo>> allSleepResellerCountVoMap = allSleepResellerCountVo.stream()
+        .collect(Collectors.groupingBy(ResellerSimpleCountVo::getAmount));
+    List<ResellerOrderOverallView> resellerOrderOverallViewList = new ArrayList<>();
+    for (ResellerSimpleCountVo resellerSimpleCountVo : allResellerCountVo) {
+      if (resellerSimpleCountVo.getAmount() == null) {
+        continue;
+      }
+      ResellerOrderOverallView resellerOrderOverallView = new ResellerOrderOverallView();
+      resellerOrderOverallView.setFaceAmount(resellerSimpleCountVo.getAmount());
+      resellerOrderOverallView.setAllCount(resellerSimpleCountVo.getAllCount());
+      resellerOrderOverallView.setAllAmount(resellerSimpleCountVo.getAllAmount());
+      if (allWaitResellerCountVoMap.containsKey(resellerSimpleCountVo.getAmount()) ) {
+        Optional<ResellerSimpleCountVo> waitOpt = allWaitResellerCountVoMap.get(
+            resellerSimpleCountVo.getAmount()).stream().findAny();
+        if (waitOpt.isPresent()) {
+          ResellerSimpleCountVo waitResellerSimpleCountVo = waitOpt.get();
+          resellerOrderOverallView.setWaitAllAmount(waitResellerSimpleCountVo.getAllAmount());
+          resellerOrderOverallView.setWaitCount(waitResellerSimpleCountVo.getAllCount());
+        }
+      }
+      if (allPayResellerCountVoMap.containsKey(resellerSimpleCountVo.getAmount())) {
+        Optional<ResellerSimpleCountVo> payIngOpt = allPayResellerCountVoMap.get(
+            resellerSimpleCountVo.getAmount()).stream().findAny();
+        if (payIngOpt.isPresent()) {
+          ResellerSimpleCountVo payIngResellerSimpleCountVo = payIngOpt.get();
+          resellerOrderOverallView.setPayingCount(payIngResellerSimpleCountVo.getAllCount());
+          resellerOrderOverallView.setPayAllAmount(payIngResellerSimpleCountVo.getAllAmount());
+        }
+      }
+
+      if (allFinishResellerCountVoMap.containsKey(resellerSimpleCountVo.getAmount())) {
+        Optional<ResellerSimpleCountVo> finishOpt = allFinishResellerCountVoMap.get(
+            resellerSimpleCountVo.getAmount()).stream().findAny();
+        if (finishOpt.isPresent()) {
+          ResellerSimpleCountVo finishIngResellerSimpleCountVo = finishOpt.get();
+          resellerOrderOverallView.setFinishCount(finishIngResellerSimpleCountVo.getAllCount());
+          resellerOrderOverallView.setFinishAllAmount(
+              finishIngResellerSimpleCountVo.getAllAmount());
+        }
+      }
+
+      if (allSleepResellerCountVoMap.containsKey(resellerSimpleCountVo.getAmount())) {
+        Optional<ResellerSimpleCountVo> sleepOpt = allSleepResellerCountVoMap.get(
+            resellerSimpleCountVo.getAmount()).stream().findAny();
+        if (sleepOpt.isPresent()) {
+          ResellerSimpleCountVo sleepResellerSimpleCountVo = sleepOpt.get();
+          resellerOrderOverallView.setSleepCount(sleepResellerSimpleCountVo.getAllCount());
+          resellerOrderOverallView.setSleepAllAmount(sleepResellerSimpleCountVo.getAllAmount());
+        }
+      }
+      resellerOrderOverallView.setAllCount(resellerSimpleCountVo.getAllCount());
+      resellerOrderOverallView.setAllAmount(resellerSimpleCountVo.getAllAmount());
+      resellerOrderOverallView.setFaceAmount(resellerSimpleCountVo.getAmount());
+      resellerOrderOverallViewList.add(resellerOrderOverallView);
+    }
+    return resellerOrderOverallViewList;
+  }
+
+  private List<ResellerSimpleCountVo> countResellerSimpleCountVoByAmount(String status,
+      String startDay, String endDay, String resellerNo) {
+    QueryWrapper<ResellerOrder> queryWrapper = new QueryWrapper<>();
+    queryWrapper.select(
+        "amount as amount, ifnull(sum(amount),0) as allAmount,count(amount) as allCount");
+    if (StringUtils.isNotBlank(status)) {
+      queryWrapper.eq("order_status", status);
+    }
+    if (StringUtils.isNotBlank(startDay)) {
+      queryWrapper.le("gmt_create", startDay);
+    }
+    if (StringUtils.isNotBlank(endDay)) {
+      queryWrapper.ge("gmt_create", endDay);
+    }
+    if (StringUtils.isNotBlank(resellerNo)) {
+      queryWrapper.ge("reseller_no", resellerNo);
+    }
+
+    queryWrapper.groupBy("amount");
+    List<ResellerSimpleCountVo> resellerSimpleCountVoList = new ArrayList<>();
+    List<Map<String, Object>> resultListMap = resellerOrderService.listMaps(queryWrapper);
+    if (resultListMap == null || resultListMap.size() <= 0) {
+      return resellerSimpleCountVoList;
+    }
+    for (Map<String, Object> tempMap : resultListMap) {
+      if (tempMap == null || tempMap.size() <= 0) {
+        continue;
+      }
+      Object amountObj = tempMap.get("amount");
+      Object allAmountObj = tempMap.get("allAmount");
+      Object allCountObj = tempMap.get("allCount");
+      ResellerSimpleCountVo resellerSimpleCountVo = new ResellerSimpleCountVo();
+      if (amountObj != null) {
+        resellerSimpleCountVo.setAmount(((Long) amountObj));
+      }
+      if (allAmountObj != null) {
+        resellerSimpleCountVo.setAllAmount(((Long) amountObj));
+      }
+      if (allCountObj != null) {
+        resellerSimpleCountVo.setAllCount((Long) allCountObj);
+      }
+      resellerSimpleCountVoList.add(resellerSimpleCountVo);
+    }
+    return resellerSimpleCountVoList;
   }
 
 }

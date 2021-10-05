@@ -8,7 +8,6 @@ import com.jeequan.jeepay.core.constants.ApiCodeEnum;
 import com.jeequan.jeepay.core.constants.ProductTypeEnum;
 import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.core.entity.ResellerOrder;
-import com.jeequan.jeepay.core.entity.SysUser;
 import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.model.ApiRes;
 import com.jeequan.jeepay.core.model.security.JeeUserDetails;
@@ -21,6 +20,7 @@ import com.jeequan.jeepay.service.biz.ResellerOrderImportService;
 import com.jeequan.jeepay.service.biz.fileentity.ResellerOrderExportEntity;
 import com.jeequan.jeepay.service.biz.rq.ResellerOrderImportRequest;
 import com.jeequan.jeepay.service.biz.vo.ResellerOrderCountVo;
+import com.jeequan.jeepay.service.biz.vo.ResellerOrderOverallView;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -258,6 +258,17 @@ public class ResellerOrderController extends CommonCtrl {
       ExcelUtil.exportExcel(pages, "核销订单报表统计", "核销订单报表统计",
           ResellerOrderCountVo.class, getToday(new Date()) + "-核销订单报表统计", httpServletResponse);
     }
+  }
+
+  @PreAuthorize("hasAnyAuthority('ENT_RESELLER_ORDER_OVERALL_COUNT')")
+  @GetMapping(value = "overallResellerCount")
+  public ApiRes overallResellerCount() {
+    ResellerOrder resellerOrder = getObject(ResellerOrder.class);
+    JSONObject paramJSON = getReqParamJSON();
+    JeeUserDetails sysUser =getCurrentUser();
+    resellerOrder.setResellerNo(sysUser.getSysUser().getUserNo());
+    List<ResellerOrderOverallView> resellerOrderOverallViewList =resellerOrderCounter.countOverallView(resellerOrder, paramJSON.getString("createdStart"), paramJSON.getString("createdEnd"));
+    return  ApiRes.ok(resellerOrderOverallViewList);
   }
 
 
