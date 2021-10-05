@@ -3,6 +3,7 @@ package com.jeequan.jeepay.service.biz;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.jeequan.jeepay.core.entity.ResellerOrder;
 import com.jeequan.jeepay.service.biz.vo.ResellerOrderCountVo;
+import com.jeequan.jeepay.service.biz.vo.ResellerOrderFundOverallView;
 import com.jeequan.jeepay.service.biz.vo.ResellerOrderOverallView;
 import java.util.List;
 
@@ -14,5 +15,7 @@ public interface ResellerOrderCounter {
 
   List<ResellerOrderOverallView> countOverallView(ResellerOrder resellerOrder,
       String startDay, String endDay);
+  List<ResellerOrderFundOverallView> countReSellerOrderFundByReseller(String startDay, String endDay, String resellerNo);
+
 
 }

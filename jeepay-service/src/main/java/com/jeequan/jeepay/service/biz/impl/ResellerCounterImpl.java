@@ -1,29 +1,31 @@
 package com.jeequan.jeepay.service.biz.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.jeequan.jeepay.core.constants.ProductTypeEnum;
-import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
-import com.jeequan.jeepay.core.entity.SysUser;
-import com.jeequan.jeepay.core.utils.AmountUtil;
-import com.jeequan.jeepay.service.biz.vo.ResellerOrderOverallView;
-import com.jeequan.jeepay.service.biz.vo.ResellerSimpleCountVo;
-import com.jeequan.jeepay.service.impl.SysUserService;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import com.jeequan.jeepay.core.entity.SysUser;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.jeequan.jeepay.core.entity.ResellerOrder;
+import com.jeequan.jeepay.service.impl.SysUserService;
+import com.jeequan.jeepay.core.constants.ProductTypeEnum;
 import com.jeequan.jeepay.service.biz.ResellerOrderCounter;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.jeequan.jeepay.service.biz.vo.ResellerOrderCountVo;
+import com.jeequan.jeepay.core.entity.ResellerPretenderProduct;
+import com.jeequan.jeepay.service.biz.vo.ResellerSimpleCountVo;
+import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.jeequan.jeepay.service.biz.vo.ResellerOrderOverallView;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.jeequan.jeepay.service.biz.vo.ResellerOrderFundOverallView;
+import com.jeequan.jeepay.service.impl.ResellerPretenderProductService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
 /**
  * @author axl rose
@@ -37,6 +39,9 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
 
   @Autowired
   private SysUserService sysUserService;
+
+  @Autowired
+  private ResellerPretenderProductService resellerPretenderProductService;
 
   @Override
   public IPage<ResellerOrderCountVo> getResellerCounterPage(ResellerOrder resellerOrder,
@@ -289,7 +294,7 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
       queryWrapper.ge("gmt_create", endDay);
     }
     if (StringUtils.isNotBlank(resellerNo)) {
-      queryWrapper.ge("reseller_no", resellerNo);
+      queryWrapper.eq("reseller_no", resellerNo);
     }
 
     queryWrapper.groupBy("amount");
@@ -318,6 +323,77 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
       resellerSimpleCountVoList.add(resellerSimpleCountVo);
     }
     return resellerSimpleCountVoList;
+  }
+
+  @Override
+  public  List<ResellerOrderFundOverallView> countReSellerOrderFundByReseller(String startDay, String endDay, String resellerNo) {
+    QueryWrapper<ResellerOrder> queryWrapper = new QueryWrapper<>();
+    queryWrapper.select("reseller_no resellerNo");
+
+    if (StringUtils.isNotBlank(startDay)) {
+      queryWrapper.le("gmt_create", startDay);
+    }
+    if (StringUtils.isNotBlank(endDay)) {
+      queryWrapper.ge("gmt_create", endDay);
+    }
+    if (StringUtils.isNotBlank(resellerNo)) {
+      queryWrapper.eq("reseller_no", resellerNo);
+    }
+    queryWrapper.groupBy("reseller_no");
+
+    List<ResellerOrderFundOverallView> resellerOrderFundOverallViewList = new ArrayList<>();
+    List<Map<String,Object>> maps  = resellerOrderService.listMaps(queryWrapper);
+    if(maps==null||maps.size()<=0){
+      return resellerOrderFundOverallViewList;
+    }
+    for(Map<String,Object> tempMap:maps){
+      ResellerOrderFundOverallView resellerOrderFundOverallView = new ResellerOrderFundOverallView();
+      String tempResellerNo = (String) tempMap.get("resellerNo");
+      Long waitAmount = queryResellerAmount(ResellerOrderStatusEnum.WAIT_CHARGE.getCode(),tempResellerNo,startDay,endDay);
+      resellerOrderFundOverallView.setResellerNo(resellerNo);
+      SysUser sysUser = sysUserService.getOne(SysUser.gw().eq(SysUser::getUserNo,tempResellerNo));
+      resellerOrderFundOverallView.setResellerName(sysUser.getRealname());
+      resellerOrderFundOverallView.setAllWaitAmount(waitAmount);
+      Long payAmount = queryResellerAmount(ResellerOrderStatusEnum.PAYING.getCode(),tempResellerNo,startDay,endDay);
+      resellerOrderFundOverallView.setAllPayAmount(payAmount);
+      Long finishAmount = queryResellerAmount(ResellerOrderStatusEnum.FINISH.getCode(),tempResellerNo,startDay,endDay);
+      resellerOrderFundOverallView.setAllFinishAmount(finishAmount);
+      ResellerPretenderProduct resellerPretenderProduct = resellerPretenderProductService.getOne(ResellerPretenderProduct.gw().eq(ResellerPretenderProduct::getResellerNo,tempResellerNo));
+      resellerOrderFundOverallView.setAllReturnedAmount(finishAmount*resellerPretenderProduct.getFeeRate().longValue());
+      Long sleepAmount = queryResellerAmount(ResellerOrderStatusEnum.SLEEP.getCode(),tempResellerNo,startDay,endDay);
+      resellerOrderFundOverallView.setAllSleepAmount(sleepAmount);
+      Long allAmount = queryResellerAmount(null,tempResellerNo,startDay,endDay);
+      resellerOrderFundOverallView.setAllOrderAmount(allAmount);
+      resellerOrderFundOverallViewList.add(resellerOrderFundOverallView);
+    }
+    return resellerOrderFundOverallViewList;
+  }
+
+  private Long queryResellerAmount(String status,String resellerNo,String startDate,String endDate){
+    QueryWrapper<ResellerOrder> queryWrapper = new QueryWrapper<>();
+    queryWrapper.select("ifnull(sum(amount),0)as amount,reseller");
+    if (StringUtils.isNotBlank(startDate)) {
+      queryWrapper.le("gmt_create", startDate);
+    }
+    if (StringUtils.isNotBlank(endDate)) {
+      queryWrapper.ge("gmt_create", endDate);
+    }
+    if (StringUtils.isNotBlank(resellerNo)) {
+      queryWrapper.eq("reseller_no", resellerNo);
+    }
+    if (StringUtils.isNotBlank(status)) {
+      queryWrapper.eq("order_status", status);
+    }
+    Map<String,Object> map = resellerOrderService.getMap(queryWrapper);
+    if(map==null||map.size()<=0){
+      return 0L;
+    }
+    Object amountObj  =  map.get("amount");
+    if(amountObj==null){
+      return  0L;
+    }
+    Long amount = (Long) map.get("amount");
+    return  amount;
   }
 
 }
