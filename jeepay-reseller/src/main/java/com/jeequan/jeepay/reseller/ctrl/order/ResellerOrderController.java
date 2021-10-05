@@ -284,8 +284,13 @@ public class ResellerOrderController extends CommonCtrl {
     List<ResellerOrderFundOverallView> resellerOrderOverallViewList = resellerOrderCounter
         .countReSellerOrderFundByReseller(getStartOfDay(now), getEndOfDay(now),
             resellerOrder.getResellerNo());
-
-    return ApiRes.ok(resellerOrderOverallViewList.get(0));
+    ResellerOrderFundOverallView resellerOrderFundOverallView;
+    if(resellerOrderOverallViewList.size()>0){
+      resellerOrderFundOverallView = resellerOrderOverallViewList.get(0);
+    }else{
+      resellerOrderFundOverallView = new ResellerOrderFundOverallView();
+    }
+    return ApiRes.ok(resellerOrderFundOverallView);
   }
 
 
