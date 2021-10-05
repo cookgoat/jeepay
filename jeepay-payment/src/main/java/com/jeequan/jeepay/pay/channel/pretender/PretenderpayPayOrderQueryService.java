@@ -119,7 +119,7 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
 
   private boolean isExpire(ResellerOrder resellerOrder) {
     if (resellerOrder == null || resellerOrder.getGmtPayingStart() == null) {
-      return true;
+      return false;
     }
     return DateUtil.getDistanceMinute(resellerOrder.getGmtPayingStart(), new Date())
         > sysConfigService.getDBApplicationConfig().getOrderMaxExpireMin();
