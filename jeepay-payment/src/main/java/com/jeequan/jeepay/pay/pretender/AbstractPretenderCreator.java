@@ -234,7 +234,7 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
    * @return ResellerOrder
    */
   private ResellerOrder randomMatchedResellerOrder(Long chargeAmount, String productType) {
-    ResellerOrder sleepOrder = querySleepingResellerOrder();
+    ResellerOrder sleepOrder = querySleepingResellerOrder(chargeAmount);
     if (sleepOrder != null) {
       return sleepOrder;
     }
@@ -252,12 +252,13 @@ public abstract class AbstractPretenderCreator implements PretenderOrderCreator 
    *
    * @return ResellerOrder
    */
-  private ResellerOrder querySleepingResellerOrder() {
+  private ResellerOrder querySleepingResellerOrder(Long chargeAmount) {
     //当前时间 减去1分钟。
     Date offsetDate = cn.hutool.core.date.DateUtil.offsetMinute(new Date(), -35);
     //查询条件： 支付中的订单 & （ 订单创建时间 + 1分钟 >= 当前时间 ）
     LambdaQueryWrapper<ResellerOrder> lambdaQueryWrapper = ResellerOrder.gw()
         .eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.SLEEP)
+        .eq(ResellerOrder::getAmount, chargeAmount)
         .le(ResellerOrder::getGmtUpdate, offsetDate);
     lambdaQueryWrapper.last("limit 1");
     lambdaQueryWrapper.orderByDesc(ResellerOrder::getGmtUpdate);
