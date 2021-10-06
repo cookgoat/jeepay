@@ -207,7 +207,7 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
     List<ResellerSimpleCountVo> allResellerCountVo = countResellerSimpleCountVoByAmount(null,
         startDay, endDay, resellerOrder.getResellerNo());
     List<ResellerSimpleCountVo> allWaitResellerCountVo = countResellerSimpleCountVoByAmount(
-        ResellerOrderStatusEnum.WAIT_CHARGE.getCode(), startDay,
+        ResellerOrderStatusEnum.WAITING_MATCH.getCode(), startDay,
         endDay, resellerOrder.getResellerNo());
     List<ResellerSimpleCountVo> allPayResellerCountVo = countResellerSimpleCountVoByAmount(
         ResellerOrderStatusEnum.PAYING.getCode(), startDay, endDay, resellerOrder.getResellerNo());
@@ -298,6 +298,7 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
     }
 
     queryWrapper.groupBy("amount");
+    queryWrapper.orderByAsc ("amount");
     List<ResellerSimpleCountVo> resellerSimpleCountVoList = new ArrayList<>();
     List<Map<String, Object>> resultListMap = resellerOrderService.listMaps(queryWrapper);
     if (resultListMap == null || resultListMap.size() <= 0) {
@@ -349,7 +350,7 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
     for(Map<String,Object> tempMap:maps){
       ResellerOrderFundOverallView resellerOrderFundOverallView = new ResellerOrderFundOverallView();
       String tempResellerNo = (String) tempMap.get("resellerNo");
-      Long waitAmount = queryResellerAmount(ResellerOrderStatusEnum.WAIT_CHARGE.getCode(),tempResellerNo,startDay,endDay);
+      Long waitAmount = queryResellerAmount(ResellerOrderStatusEnum.WAITING_MATCH.getCode(),tempResellerNo,startDay,endDay);
       resellerOrderFundOverallView.setResellerNo(resellerNo);
       SysUser sysUser = sysUserService.getOne(SysUser.gw().eq(SysUser::getUserNo,tempResellerNo));
       resellerOrderFundOverallView.setResellerName(sysUser.getRealname());
