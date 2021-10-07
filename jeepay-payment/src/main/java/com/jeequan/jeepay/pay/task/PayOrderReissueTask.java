@@ -49,7 +49,7 @@ public class PayOrderReissueTask {
     public void start() {
 
         //当前时间 减去1分钟。
-        Date offsetDate = DateUtil.offsetMinute(new Date(), -4);
+        Date offsetDate = DateUtil.offsetMinute(new Date(), -2);
 
         //查询条件： 支付中的订单 & （ 订单创建时间 + 1分钟 >= 当前时间 ）
         LambdaQueryWrapper<PayOrder> lambdaQueryWrapper = PayOrder.gw().eq(PayOrder::getState, PayOrder.STATE_ING).le(PayOrder::getCreatedAt, offsetDate);
