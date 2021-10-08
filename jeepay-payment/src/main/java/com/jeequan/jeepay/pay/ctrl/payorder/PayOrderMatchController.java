@@ -97,7 +97,7 @@ public class PayOrderMatchController extends ApiController {
     matchPayDtaRs.setMchOrderNo(payOrder.getMchOrderNo());
     matchPayDtaRs.setAmount(AmountUtil.convertCent2Dollar(payOrder.getAmount()));
     matchPayDtaRs.setPayType(payOrder.getWayCode());
-    matchPayDtaRs.setMatchEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 360, 0));
+    matchPayDtaRs.setMatchEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 120, 0));
     return matchPayDtaRs;
   }
 

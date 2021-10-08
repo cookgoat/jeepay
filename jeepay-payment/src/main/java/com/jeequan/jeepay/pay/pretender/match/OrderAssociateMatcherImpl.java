@@ -8,7 +8,6 @@ import com.jeequan.jeepay.core.utils.DateUtil;
 import com.jeequan.jeepay.pay.util.PaywayUtil;
 import org.springframework.stereotype.Service;
 import com.jeequan.jeepay.core.utils.AmountUtil;
-import com.jeequan.jeepay.core.utils.JeepayKit;
 import com.jeequan.jeepay.core.entity.PayOrder;
 import com.jeequan.jeepay.pay.pretender.rq.BaseRq;
 import com.jeequan.jeepay.pay.server.MatchPayDtaRs;
@@ -120,7 +119,7 @@ public class OrderAssociateMatcherImpl implements OrderAssociateMatcher {
     if (pretenderOrder != null && count > 0) {
       matchPayDtaRs.setCode("4004");
       matchPayDtaRs.setPayUrl(pretenderOrder.getPayUrl());
-      matchPayDtaRs.setPayEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 1800, 0));
+      matchPayDtaRs.setPayEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 300, 0));
       return matchPayDtaRs;
     }
 
@@ -181,8 +180,8 @@ public class OrderAssociateMatcherImpl implements OrderAssociateMatcher {
 
   private void setPayOrderCommonInfo(MatchPayDtaRs matchPayDtaRs, PayOrder payOrder) {
     matchPayDtaRs.setPayType(payOrder.getWayCode());
-    matchPayDtaRs.setMatchEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 360, 0));
-    matchPayDtaRs.setPayEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 1800, 0));
+    matchPayDtaRs.setMatchEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 120, 0));
+    matchPayDtaRs.setPayEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 300, 0));
     matchPayDtaRs.setAmount(AmountUtil.convertCent2Dollar(payOrder.getAmount()));
     matchPayDtaRs.setMchOrderNo(payOrder.getMchOrderNo());
   }
