@@ -269,7 +269,7 @@ public class ResellerOrderController extends CommonCtrl {
     Date now = new Date();
     resellerOrder.setResellerNo(sysUser.getSysUser().getUserNo());
     List<ResellerOrderOverallView> resellerOrderOverallViewList = resellerOrderCounter
-        .countOverallView(resellerOrder, getStartOfDay(now), getEndOfDay(now));
+        .countOverallViewByAmount(resellerOrder, getStartOfDay(now), getEndOfDay(now));
     return ApiRes.ok(resellerOrderOverallViewList);
   }
 
@@ -283,7 +283,7 @@ public class ResellerOrderController extends CommonCtrl {
     Date now = new Date();
     List<ResellerOrderFundOverallView> resellerOrderOverallViewList = resellerOrderCounter
         .countReSellerOrderFundByReseller(getStartOfDay(now), getEndOfDay(now),
-            resellerOrder.getResellerNo());
+            resellerOrder);
     ResellerOrderFundOverallView resellerOrderFundOverallView;
     if(resellerOrderOverallViewList.size()>0){
       resellerOrderFundOverallView = resellerOrderOverallViewList.get(0);
@@ -314,5 +314,16 @@ public class ResellerOrderController extends CommonCtrl {
     return new SimpleDateFormat(("yyyy-MM-dd HH:mm:ss")).format(calendar.getTime());
   }
 
+  @PreAuthorize("hasAnyAuthority('ENT_RESELLER_ORDER_OVERALL_COUNT')")
+  @GetMapping(value = "orderFundOverallViewByChildReseller")
+  public ApiRes orderFundOverallViewByChildReseller() {
+    ResellerOrder resellerOrder = getObject(ResellerOrder.class);
+    JeeUserDetails sysUser = getCurrentUser();
+    resellerOrder.setResellerNo(sysUser.getSysUser().getUserNo());
+    Date now = new Date();
+    List<ResellerOrderFundOverallView> resellerOrderOverallViewList = resellerOrderCounter
+        .countReSellerOrderFundByQueryFlag(getStartOfDay(now),getEndOfDay(now),resellerOrder);
+    return ApiRes.ok(resellerOrderOverallViewList);
+  }
 
 }

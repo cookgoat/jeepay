@@ -1,5 +1,10 @@
 package com.jeequan.jeepay.pay.ctrl.payorder;
 
+import com.jeequan.jeepay.core.model.ApiRes;
+import com.jeequan.jeepay.core.utils.DateUtil;
+import com.jeequan.jeepay.pay.ctrl.ApiController;
+import io.lettuce.core.dynamic.annotation.Param;
+import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -15,11 +20,11 @@ import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
 import com.github.rholder.retry.RetryException;
 import com.jeequan.jeepay.core.utils.AmountUtil;
-import com.jeequan.jeepay.core.ctrls.AbstractCtrl;
 import com.jeequan.jeepay.pay.server.MatchPayDtaRs;
 import com.jeequan.jeepay.pay.rqrs.msg.ChannelRetMsg;
 import com.jeequan.jeepay.service.impl.PayOrderService;
 import com.jeequan.jeepay.pay.server.WsPayOrderMatchServer;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +36,7 @@ import com.jeequan.jeepay.pay.pretender.match.OrderAssociateMatcher;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/anon/match")
-public class PayOrderMatchController extends AbstractCtrl {
+public class PayOrderMatchController extends ApiController {
 
   private final static Logger logger = LoggerFactory.getLogger(PayOrderMatchController.class);
 
@@ -47,15 +51,13 @@ public class PayOrderMatchController extends AbstractCtrl {
           WaitStrategies.fixedWait(10, TimeUnit.SECONDS))
       .withStopStrategy(StopStrategies.stopAfterAttempt(6)).build();
 
-  @RequestMapping("/match")
-  public void match() {
+  @PostMapping("/api/order/match")
+  public ApiRes match(@Param("payOrderId") String payOrderId) {
     //请求参数
     logger.info("[PayOrderMatchController.match] start");
-    JSONObject params = getReqParamJSON();
-    String payOrderId = params.getString("payOrderId");
     if (StringUtils.isBlank(payOrderId)) {
       logger.info("[PayOrderMatchController.match] payOrderId is null payOrderId={}", payOrderId);
-      return;
+      return ApiRes.ok();
     }
     String desOrderId = JeepayKit.aesDecode(payOrderId);
     PayOrder payOrder = getPayOrder(desOrderId);
@@ -64,7 +66,7 @@ public class PayOrderMatchController extends AbstractCtrl {
           payOrderId);
       MatchPayDtaRs matchPayDtaRs = getBackFailedMatchPayDtaRs();
       WsPayOrderMatchServer.sendMsgByOrderId(payOrderId, JSONObject.toJSONString(matchPayDtaRs));
-      return;
+      return ApiRes.ok();
     }
     //send exist pay order id null;
     MatchPayDtaRs matchPayDtaRs = buildExistPayOrderInfo(payOrder);
@@ -82,6 +84,7 @@ public class PayOrderMatchController extends AbstractCtrl {
           "[PayOrderMatchController.match] RetryException execution [pretenderOrderMatcher.matchOrder] failed payOrderId={}",
           desOrderId);
     }
+    return  ApiRes.ok();
   }
 
   public PayOrder getPayOrder(String desPayOrderId) {
@@ -94,6 +97,7 @@ public class PayOrderMatchController extends AbstractCtrl {
     matchPayDtaRs.setMchOrderNo(payOrder.getMchOrderNo());
     matchPayDtaRs.setAmount(AmountUtil.convertCent2Dollar(payOrder.getAmount()));
     matchPayDtaRs.setPayType(payOrder.getWayCode());
+    matchPayDtaRs.setMatchEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 360, 0));
     return matchPayDtaRs;
   }
 
@@ -104,5 +108,9 @@ public class PayOrderMatchController extends AbstractCtrl {
     matchPayDtaRs.setChannelRetMsg(ChannelRetMsg.confirmFail());
     return matchPayDtaRs;
   }
+
+
+
+
 
 }

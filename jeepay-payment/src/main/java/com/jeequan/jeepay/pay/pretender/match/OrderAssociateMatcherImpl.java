@@ -81,9 +81,8 @@ public class OrderAssociateMatcherImpl implements OrderAssociateMatcher {
       return matchPayDtaRs;
     }
     //do aes decode orderId
-    String desOrderId = JeepayKit.aesDecode(orderId);
     //query pay order by orderId
-    PayOrder payOrder = payOrderService.queryOrder(desOrderId);
+    PayOrder payOrder = payOrderService.queryOrder(orderId);
     //if pay order is not exist.set 5001 code
     if (payOrder == null) {
       matchPayDtaRs.setCode("5001");
@@ -121,6 +120,7 @@ public class OrderAssociateMatcherImpl implements OrderAssociateMatcher {
     if (pretenderOrder != null && count > 0) {
       matchPayDtaRs.setCode("4004");
       matchPayDtaRs.setPayUrl(pretenderOrder.getPayUrl());
+      matchPayDtaRs.setPayEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 1800, 0));
       return matchPayDtaRs;
     }
 
@@ -181,7 +181,8 @@ public class OrderAssociateMatcherImpl implements OrderAssociateMatcher {
 
   private void setPayOrderCommonInfo(MatchPayDtaRs matchPayDtaRs, PayOrder payOrder) {
     matchPayDtaRs.setPayType(payOrder.getWayCode());
-    matchPayDtaRs.setMatchEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 180, 0));
+    matchPayDtaRs.setMatchEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 360, 0));
+    matchPayDtaRs.setPayEndTime(DateUtil.addDate(new Date(), 0, 0, 0, 0, 0, 1800, 0));
     matchPayDtaRs.setAmount(AmountUtil.convertCent2Dollar(payOrder.getAmount()));
     matchPayDtaRs.setMchOrderNo(payOrder.getMchOrderNo());
   }

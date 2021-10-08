@@ -15,19 +15,19 @@
  */
 package com.jeequan.jeepay.pay.task;
 
-import cn.hutool.core.date.DateUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.jeequan.jeepay.core.entity.PayOrder;
-import com.jeequan.jeepay.pay.service.ChannelOrderReissueService;
-import com.jeequan.jeepay.service.impl.PayOrderService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
 import java.util.Date;
+import lombok.extern.slf4j.Slf4j;
+import cn.hutool.core.date.DateUtil;
+import com.jeequan.jeepay.core.entity.PayOrder;
+import org.springframework.stereotype.Component;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.jeequan.jeepay.service.impl.PayOrderService;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.jeequan.jeepay.pay.service.ChannelOrderReissueService;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+
 
 /*
 * 补单定时任务
@@ -49,7 +49,7 @@ public class PayOrderReissueTask {
     public void start() {
 
         //当前时间 减去1分钟。
-        Date offsetDate = DateUtil.offsetMinute(new Date(), -2);
+        Date offsetDate = DateUtil.offsetMinute(new Date(), -1);
 
         //查询条件： 支付中的订单 & （ 订单创建时间 + 1分钟 >= 当前时间 ）
         LambdaQueryWrapper<PayOrder> lambdaQueryWrapper = PayOrder.gw().eq(PayOrder::getState, PayOrder.STATE_ING).le(PayOrder::getCreatedAt, offsetDate);

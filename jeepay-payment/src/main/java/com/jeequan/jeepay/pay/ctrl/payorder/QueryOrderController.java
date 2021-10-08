@@ -15,17 +15,20 @@
  */
 package com.jeequan.jeepay.pay.ctrl.payorder;
 
+import com.alibaba.fastjson.JSONObject;
 import com.jeequan.jeepay.core.entity.PayOrder;
 import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.model.ApiRes;
 import com.jeequan.jeepay.pay.ctrl.ApiController;
 import com.jeequan.jeepay.pay.rqrs.payorder.QueryPayOrderRQ;
 import com.jeequan.jeepay.pay.rqrs.payorder.QueryPayOrderRS;
+import com.jeequan.jeepay.pay.service.ChannelOrderQuery;
 import com.jeequan.jeepay.pay.service.ConfigContextService;
 import com.jeequan.jeepay.service.impl.PayOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,6 +45,7 @@ public class QueryOrderController extends ApiController {
 
     @Autowired private PayOrderService payOrderService;
     @Autowired private ConfigContextService configContextService;
+    @Autowired private ChannelOrderQuery  channelOrderQuery;
 
     /**
      * 查单接口
@@ -64,5 +68,23 @@ public class QueryOrderController extends ApiController {
         QueryPayOrderRS bizRes = QueryPayOrderRS.buildByPayOrder(payOrder);
         return ApiRes.okWithSign(bizRes, configContextService.getMchAppConfigContext(rq.getMchNo(), rq.getAppId()).getMchApp().getAppSecret());
     }
+
+    /**
+     * 查单接口
+     * **/
+    @RequestMapping("/api/pay/query/{channelOrderId}")
+    public ApiRes queryChnailOrder(@PathVariable("channelOrderId") String channelOrderId){
+        if(StringUtils.isBlank(channelOrderId)){
+            throw new BizException("channelOrderId 不能为空");
+        }
+      JSONObject jsonObject = channelOrderQuery.queryByChannelOrderId(channelOrderId);
+        if(jsonObject == null){
+            throw new BizException("订单不存在");
+        }
+        return ApiRes.ok(jsonObject);
+    }
+
+
+
 
 }

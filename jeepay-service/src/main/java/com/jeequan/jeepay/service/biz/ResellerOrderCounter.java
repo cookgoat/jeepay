@@ -9,13 +9,18 @@ import java.util.List;
 
 public interface ResellerOrderCounter {
 
-  IPage<ResellerOrderCountVo> getResellerCounterPage(ResellerOrder resellerOrder,String startDay,String endDay,IPage iPage);
-   List<ResellerOrderCountVo> getResellerCounterList(ResellerOrder resellerOrder,
+  IPage<ResellerOrderCountVo> getResellerCounterPage(ResellerOrder resellerOrder, String startDay,
+      String endDay, IPage iPage);
+
+  List<ResellerOrderCountVo> getResellerCounterList(ResellerOrder resellerOrder,
       String startDay, String endDay);
 
-  List<ResellerOrderOverallView> countOverallView(ResellerOrder resellerOrder,
+  List<ResellerOrderOverallView> countOverallViewByAmount(ResellerOrder resellerOrder,
       String startDay, String endDay);
-  List<ResellerOrderFundOverallView> countReSellerOrderFundByReseller(String startDay, String endDay, String resellerNo);
 
+  List<ResellerOrderFundOverallView> countReSellerOrderFundByReseller(String startDay,
+      String endDay, ResellerOrder resellerOrder);
 
+  List<ResellerOrderFundOverallView> countReSellerOrderFundByQueryFlag(String startDay,
+      String endDay, ResellerOrder resellerOrder);
 }

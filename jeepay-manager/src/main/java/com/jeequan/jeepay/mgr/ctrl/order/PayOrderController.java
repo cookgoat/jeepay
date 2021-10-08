@@ -19,6 +19,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.jeequan.jeepay.JeepayClient;
+import com.jeequan.jeepay.components.mq.model.PayOrderSupplementMQ;
+import com.jeequan.jeepay.components.mq.vender.IMQSender;
 import com.jeequan.jeepay.core.aop.MethodLog;
 import com.jeequan.jeepay.core.constants.ApiCodeEnum;
 import com.jeequan.jeepay.core.entity.MchApp;
@@ -60,6 +62,7 @@ public class PayOrderController extends CommonCtrl {
     @Autowired private PayWayService payWayService;
     @Autowired private SysConfigService sysConfigService;
     @Autowired private MchAppService mchAppService;
+    @Autowired private IMQSender imqSender;
 
     /**
      * @author: pangxiaoyu
@@ -202,6 +205,22 @@ public class PayOrderController extends CommonCtrl {
         } catch (JeepayException e) {
             throw new BizException(e.getMessage());
         }
+    }
+
+    /**
+     *
+     * 发起订单补单
+     *
+     */
+    @MethodLog(remark = "发起订单补单")
+    @PreAuthorize("hasAuthority('ENT_ORDER_LIST')")
+    @PostMapping("/supplement/{payOrderId}")
+    public ApiRes supplement(@PathVariable("payOrderId") String payOrderId) {
+        if(StringUtils.isBlank(payOrderId)){
+            throw  new BizException(ApiCodeEnum.PARAMS_ERROR);
+        }
+        imqSender.send(PayOrderSupplementMQ.build(payOrderId,1));
+        return ApiRes.ok();
     }
 
 }

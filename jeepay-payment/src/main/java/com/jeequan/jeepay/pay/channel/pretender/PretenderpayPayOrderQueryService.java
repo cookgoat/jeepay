@@ -75,17 +75,17 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
   @Override
   @Transactional(rollbackFor = Exception.class)
   public ChannelRetMsg query(PayOrder payOrder, MchAppConfigContext mchAppConfigContext) {
-
+    long distanceMinute = DateUtil.getDistanceMinute(payOrder.getCreatedAt(), new Date());
     PretenderOrder pretenderOrder = pretenderOrderService
         .getOne(PretenderOrder.gw().eq(PretenderOrder::getOutTradeNo, payOrder.getChannelOrderNo())
             .eq(PretenderOrder::getStatus, PretenderOrderStatusEnum.PAYING), true);
-    if (pretenderOrder == null) {
+    if (pretenderOrder == null && distanceMinute <= 2) {
+      return ChannelRetMsg.waiting();
+    }
+    if (pretenderOrder == null && distanceMinute > 2) {
       return ChannelRetMsg.confirmFail();
     }
-    ResellerOrder resellerOrder = resellerOrderService
-        .getOne(ResellerOrder.gw()
-            .eq(ResellerOrder::getOrderNo, pretenderOrder.getMatchResellerOrderNo())
-            .eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.PAYING), true);
+
     QueryOrderRequest queryOrderRequest = new QueryOrderRequest();
     queryOrderRequest.setOrderNo(pretenderOrder.getOutTradeNo());
     PretenderAccount pretenderAccount = pretenderAccountService.getOne(
@@ -99,6 +99,10 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
       throw new BizException(QUERY_PRETENDER_ORDER_FAILED);
     }
     String notifyStatus = sysConfigService.getDBApplicationConfig().getPretenderNotifyStatus();
+    ResellerOrder resellerOrder = resellerOrderService
+        .getOne(ResellerOrder.gw()
+            .eq(ResellerOrder::getOrderNo, pretenderOrder.getMatchResellerOrderNo())
+            .eq(ResellerOrder::getOrderStatus, ResellerOrderStatusEnum.PAYING), true);
     if (StringUtils.equalsIgnoreCase(notifyStatus, queryOrderResult.getData().getStatus()) ||
         queryOrderResult.getData().isSuccess()) {
       doSuccess(resellerOrder, pretenderOrder, payOrder);
@@ -109,16 +113,22 @@ public class PretenderpayPayOrderQueryService implements IPayOrderQueryService {
     if (queryOrderResult.getData().isWaiting()) {
       return ChannelRetMsg.waiting();
     }
-    if (isExpire(resellerOrder)) {
+    if (isExpire(resellerOrder, distanceMinute)) {
       doExpireOperation(resellerOrder, pretenderOrder);
       return ChannelRetMsg.confirmCancel(queryOrderResult.getData().getOrderNo());
     }
     return ChannelRetMsg.unknown();
   }
 
-
-  private boolean isExpire(ResellerOrder resellerOrder) {
-    if (resellerOrder == null || resellerOrder.getGmtPayingStart() == null) {
+  private boolean isExpire(ResellerOrder resellerOrder, long distanceMinute) {
+    boolean isNullResellerOrder =
+        resellerOrder == null || resellerOrder.getGmtPayingStart() == null;
+    boolean isIn2min = distanceMinute <= 2;
+    if (isNullResellerOrder && isIn2min) {
+      return false;
+    }
+    boolean isNotIn2min = distanceMinute > 2;
+    if (isNullResellerOrder && isNotIn2min) {
       return true;
     }
     return DateUtil.getDistanceMinute(resellerOrder.getGmtPayingStart(), new Date())

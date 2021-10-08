@@ -13,6 +13,6 @@ public interface OrderAssociateMatcher {
    * @param orderId
    * @return MatchPayDtaRs match info
    */
-  MatchPayDtaRs matchOrder(String orderId);
+  MatchPayDtaRs matchOrder(String orderId) throws InterruptedException;
 
 }

@@ -16,4 +16,5 @@ public class ResellerOrderFundOverallView {
    private Long allReturnedAmount=0L;
    private Long allPayAmount=0L;
    private Long allSleepAmount=0L;
+   private String queryFlag;
 }

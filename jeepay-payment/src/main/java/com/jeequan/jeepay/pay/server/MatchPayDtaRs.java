@@ -11,6 +11,7 @@ public class MatchPayDtaRs {
   private String amount;
   private String payType;
   private Date matchEndTime;
+  private Date payEndTime;
   private String payUrl;
   private String code;
   /** 上游渠道返回数据包 (无需JSON序列化) **/
