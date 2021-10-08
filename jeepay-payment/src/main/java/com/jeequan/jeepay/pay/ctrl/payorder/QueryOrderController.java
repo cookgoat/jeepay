@@ -81,7 +81,7 @@ public class QueryOrderController extends ApiController {
         if(jsonObject == null){
             throw new BizException("订单不存在");
         }
-        return ApiRes.ok(jsonObject.toJSONString());
+        return ApiRes.ok(jsonObject.toString());
     }
 
 
