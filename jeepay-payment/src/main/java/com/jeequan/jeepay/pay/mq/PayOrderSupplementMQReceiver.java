@@ -37,6 +37,7 @@ public class PayOrderSupplementMQReceiver implements PayOrderSupplementMQ.IMQRec
         return;
       }
       payOrder.setState(PayOrder.STATE_SUCCESS);
+      payOrderService.updateById(payOrder);
       payOrderProcessService.confirmSuccess(payOrder);
     }catch (Exception e) {
       log.error(e.getMessage());
