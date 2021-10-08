@@ -426,6 +426,7 @@ public class ResellerCounterImpl implements ResellerOrderCounter {
         resellerOrder, startDay, endDay);
     for (ResellerOrderFundOverallView resellerOrderFundOverallView : resellerOrderFundOverallViewList) {
       if (StringUtils.isNotBlank(resellerOrderFundOverallView.getQueryFlag())) {
+        resellerOrder.setOrderStatus(null);
         resellerOrder.setQueryFlag(resellerOrderFundOverallView.getQueryFlag());
         Long allOrderAmount = sumResellerOrderByQueryFlag(resellerOrder, startDay, endDay);
         resellerOrder.setOrderStatus(ResellerOrderStatusEnum.WAITING_MATCH.getCode());
