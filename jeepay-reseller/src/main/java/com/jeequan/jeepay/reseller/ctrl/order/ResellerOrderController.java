@@ -17,8 +17,10 @@ import com.jeequan.jeepay.core.utils.FileKit;
 import com.jeequan.jeepay.reseller.ctrl.CommonCtrl;
 import com.jeequan.jeepay.service.biz.ResellerOrderCounter;
 import com.jeequan.jeepay.service.biz.ResellerOrderImportService;
+import com.jeequan.jeepay.service.biz.ResellerOrderStatusTrigger;
 import com.jeequan.jeepay.service.biz.fileentity.ResellerOrderExportEntity;
 import com.jeequan.jeepay.service.biz.rq.ResellerOrderImportRequest;
+import com.jeequan.jeepay.service.biz.rq.ResellerOrderTriggerRequest;
 import com.jeequan.jeepay.service.biz.vo.ResellerOrderCountVo;
 import com.jeequan.jeepay.service.biz.vo.ResellerOrderFundOverallView;
 import com.jeequan.jeepay.service.biz.vo.ResellerOrderOverallView;
@@ -53,6 +55,9 @@ public class ResellerOrderController extends CommonCtrl {
 
   @Autowired
   private ResellerOrderCounter resellerOrderCounter;
+
+  @Autowired
+  private ResellerOrderStatusTrigger resellerOrderStatusTrigger;
 
   private static SimpleDateFormat sdf = new SimpleDateFormat(("yyyy-MM-dd HH:mm:ss"));
 
@@ -285,9 +290,9 @@ public class ResellerOrderController extends CommonCtrl {
         .countReSellerOrderFundByReseller(getStartOfDay(now), getEndOfDay(now),
             resellerOrder);
     ResellerOrderFundOverallView resellerOrderFundOverallView;
-    if(resellerOrderOverallViewList.size()>0){
+    if (resellerOrderOverallViewList.size() > 0) {
       resellerOrderFundOverallView = resellerOrderOverallViewList.get(0);
-    }else{
+    } else {
       resellerOrderFundOverallView = new ResellerOrderFundOverallView();
     }
     return ApiRes.ok(resellerOrderFundOverallView);
@@ -322,8 +327,27 @@ public class ResellerOrderController extends CommonCtrl {
     resellerOrder.setResellerNo(sysUser.getSysUser().getUserNo());
     Date now = new Date();
     List<ResellerOrderFundOverallView> resellerOrderOverallViewList = resellerOrderCounter
-        .countReSellerOrderFundByQueryFlag(getStartOfDay(now),getEndOfDay(now),resellerOrder);
+        .countReSellerOrderFundByQueryFlag(getStartOfDay(now), getEndOfDay(now), resellerOrder);
     return ApiRes.ok(resellerOrderOverallViewList);
+  }
+
+  /**
+   * 批量警用、启用
+   */
+  @PreAuthorize("hasAuthority('ENT_RESELLER_ORDER_GROUP_IMPORT')")
+  @PostMapping("trigger")
+  public ApiRes batchTrigger() {
+    ResellerOrderTriggerRequest resellerOrderTriggerRequest = getObject(
+        ResellerOrderTriggerRequest.class);
+    if (StringUtils.equalsIgnoreCase(resellerOrderTriggerRequest.getResellerOrderStatus(),
+        ResellerOrderStatusEnum.NULLIFY.getCode())) {
+      resellerOrderStatusTrigger.batchDisable(resellerOrderTriggerRequest);
+    }
+    if (StringUtils.equalsIgnoreCase(resellerOrderTriggerRequest.getResellerOrderStatus(),
+        ResellerOrderStatusEnum.WAIT_CHARGE.getCode())) {
+      resellerOrderStatusTrigger.batchEnable(resellerOrderTriggerRequest);
+    }
+    return ApiRes.ok();
   }
 
 }

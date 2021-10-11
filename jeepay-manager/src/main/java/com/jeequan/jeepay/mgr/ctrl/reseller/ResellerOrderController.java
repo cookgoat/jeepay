@@ -10,10 +10,14 @@ import com.jeequan.jeepay.core.constants.ResellerOrderStatusEnum;
 import com.jeequan.jeepay.core.entity.ResellerOrder;
 import com.jeequan.jeepay.core.exception.BizException;
 import com.jeequan.jeepay.core.model.ApiRes;
+import com.jeequan.jeepay.core.model.security.JeeUserDetails;
 import com.jeequan.jeepay.core.utils.AmountUtil;
 import com.jeequan.jeepay.core.utils.ExcelUtil;
 import com.jeequan.jeepay.mgr.ctrl.CommonCtrl;
+import com.jeequan.jeepay.service.biz.ResellerOrderCounter;
 import com.jeequan.jeepay.service.biz.fileentity.ResellerOrderExportEntity;
+import com.jeequan.jeepay.service.biz.vo.ResellerOrderFundOverallView;
+import com.jeequan.jeepay.service.biz.vo.ResellerOrderOverallView;
 import com.jeequan.jeepay.service.impl.ResellerOrderService;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,6 +44,9 @@ public class ResellerOrderController extends CommonCtrl {
   private ResellerOrderService resellerOrderService;
 
   private static SimpleDateFormat sdf = new SimpleDateFormat(("yyyy-MM-dd HH:mm:ss"));
+
+  @Autowired
+  private ResellerOrderCounter resellerOrderCounter;
 
   @PreAuthorize("hasAnyAuthority('ENT_RESELLER_ORDER_GROUP_LIST')")
   @GetMapping
@@ -207,6 +214,45 @@ public class ResellerOrderController extends CommonCtrl {
     Calendar calendar = Calendar.getInstance();
     calendar.setTime(time);
     return new SimpleDateFormat(("yyyy-MM-dd")).format(calendar.getTime());
+  }
+
+  @PreAuthorize("hasAnyAuthority('ENT_RESELLER_ORDER_OVERALL_COUNT')")
+  @GetMapping(value = "overallResellerCount")
+  public ApiRes overallResellerCount() {
+    ResellerOrder resellerOrder = getObject(ResellerOrder.class);
+    JSONObject paramJSON = getReqParamJSON();
+    String startStr = paramJSON.getString("createdStart");
+    String createdEnd = paramJSON.getString("createdEnd");
+    List<ResellerOrderOverallView> resellerOrderOverallViewList = resellerOrderCounter
+        .countOverallViewByAmount(resellerOrder, startStr, createdEnd);
+    return ApiRes.ok(resellerOrderOverallViewList);
+  }
+
+
+  @PreAuthorize("hasAnyAuthority('ENT_RESELLER_ORDER_OVERALL_COUNT')")
+  @GetMapping(value = "orderFundOverallView")
+  public ApiRes orderFundOverallView() {
+    ResellerOrder resellerOrder = getObject(ResellerOrder.class);
+    JSONObject paramJSON = getReqParamJSON();
+    String startStr = paramJSON.getString("createdStart");
+    String createdEnd = paramJSON.getString("createdEnd");
+    List<ResellerOrderFundOverallView> resellerOrderOverallViewList = resellerOrderCounter
+        .countReSellerOrderFundByReseller(startStr, createdEnd,
+            resellerOrder);
+    return ApiRes.ok(resellerOrderOverallViewList);
+  }
+
+
+  @PreAuthorize("hasAnyAuthority('ENT_RESELLER_ORDER_OVERALL_COUNT')")
+  @GetMapping(value = "orderFundOverallViewByChildReseller")
+  public ApiRes orderFundOverallViewByChildReseller() {
+    ResellerOrder resellerOrder = getObject(ResellerOrder.class);
+    JSONObject paramJSON = getReqParamJSON();
+    String startStr = paramJSON.getString("createdStart");
+    String createdEnd = paramJSON.getString("createdEnd");
+    List<ResellerOrderFundOverallView> resellerOrderOverallViewList = resellerOrderCounter
+        .countReSellerOrderFundByQueryFlag(startStr,createdEnd,resellerOrder);
+    return ApiRes.ok(resellerOrderOverallViewList);
   }
 
 }
